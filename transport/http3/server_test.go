@@ -11,7 +11,6 @@ import (
 
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
-	"github.com/tx7do/kratos-transport/testing/tlsutil"
 
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
@@ -19,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	api "github.com/tx7do/kratos-transport/testing/api/protobuf"
+	"github.com/tx7do/kratos-transport/testing/tlsutil"
 )
 
 func HygrothermographHandler(w http.ResponseWriter, r *http.Request) {
