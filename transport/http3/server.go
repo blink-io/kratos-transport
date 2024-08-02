@@ -2,12 +2,8 @@ package http3
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"encoding/pem"
-	"math/big"
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -66,16 +62,13 @@ func NewServer(opts ...ServerOption) *Server {
 
 func (s *Server) init(opts ...ServerOption) {
 	s.Server = &http3.Server{
-		Addr: ":443",
+		Addr: ":8443",
 	}
 
 	for _, o := range opts {
 		o(s)
 	}
 
-	if s.tlsConf == nil {
-		s.tlsConf = s.generateTLSConfig()
-	}
 	s.Server.TLSConfig = s.tlsConf
 
 	s.router = mux.NewRouter().StrictSlash(s.strictSlash)
@@ -90,15 +83,13 @@ func (s *Server) init(opts ...ServerOption) {
 func (s *Server) Endpoint() (*url.URL, error) {
 	addr := s.Addr
 
-	prefix := "http://"
 	if s.tlsConf == nil {
-		if !strings.HasPrefix(addr, "http://") {
-			prefix = "http://"
-		}
-	} else {
-		if !strings.HasPrefix(addr, "https://") {
-			prefix = "https://"
-		}
+		return nil, errors.New("http3: no TLS configured")
+	}
+
+	var prefix string
+	if !strings.HasPrefix(addr, "https://") {
+		prefix = "https://"
 	}
 	addr = prefix + addr
 
@@ -108,6 +99,10 @@ func (s *Server) Endpoint() (*url.URL, error) {
 }
 
 func (s *Server) Start(ctx context.Context) error {
+	if s.tlsConf == nil {
+		return errors.New("http3: no TLS configured")
+	}
+
 	log.Infof("[HTTP3] server listening on: %s", s.Addr)
 
 	if err := s.ListenAndServe(); err != nil {
@@ -179,28 +174,5 @@ func (s *Server) filter() mux.MiddlewareFunc {
 			tr.request = req.WithContext(transport.NewServerContext(ctx, tr))
 			next.ServeHTTP(w, tr.request)
 		})
-	}
-}
-
-func (s *Server) generateTLSConfig() *tls.Config {
-	key, err := rsa.GenerateKey(rand.Reader, 1024)
-	if err != nil {
-		panic(err)
-	}
-	template := x509.Certificate{SerialNumber: big.NewInt(1)}
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
-	if err != nil {
-		panic(err)
-	}
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
-
-	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
-	if err != nil {
-		panic(err)
-	}
-	return &tls.Config{
-		Certificates: []tls.Certificate{tlsCert},
-		NextProtos:   []string{"kratos-quic-server"},
 	}
 }

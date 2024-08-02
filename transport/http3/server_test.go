@@ -2,8 +2,6 @@ package http3
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -13,6 +11,7 @@ import (
 
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
+	"github.com/tx7do/kratos-transport/testing/tlsutil"
 
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
@@ -43,7 +42,8 @@ func TestServer(t *testing.T) {
 	ctx := context.Background()
 
 	srv := NewServer(
-		WithAddress(":8800"),
+		Address(":8800"),
+		TLSConfig(tlsutil.GenerateTLSConfig()),
 	)
 
 	srv.HandleFunc("/hygrothermograph", HygrothermographHandler)
@@ -98,17 +98,11 @@ func TestClient(t *testing.T) {
 
 	var qconf quic.Config
 
-	pool, err := x509.SystemCertPool()
-	assert.Nil(t, err)
-
-	tlsConf := &tls.Config{
-		InsecureSkipVerify: true,
-		RootCAs:            pool,
-	}
+	tlsConf := tlsutil.MustInsecureTLSConfig()
 	cli, err := khttp.NewClient(ctx,
 		khttp.WithEndpoint("127.0.0.1:8800"),
 		khttp.WithTLSConfig(tlsConf),
-		khttp.WithTransport(&http3.RoundTripper{TLSClientConfig: tlsConf, QuicConfig: &qconf}),
+		khttp.WithTransport(&http3.RoundTripper{TLSClientConfig: tlsConf, QUICConfig: &qconf}),
 	)
 	assert.Nil(t, err)
 	assert.NotNil(t, cli)
