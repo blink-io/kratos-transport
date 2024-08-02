@@ -1,4 +1,4 @@
-package http3
+package registrar
 
 import (
 	"context"
@@ -17,19 +17,19 @@ type ServerRouter interface {
 
 var _ ServerRouter = (*khttp.Server)(nil)
 
-type RegisterToHTTPFunc func(context.Context, ServerRouter) error
+type RegisterFunc func(context.Context, ServerRouter) error
 
 type WithRegistrar interface {
-	HTTPRegistrar(context.Context) RegisterToHTTPFunc
+	HTTPRegistrar(context.Context) RegisterFunc
 }
 
-type RegistrarFunc[S any] func(ServerRouter, S)
+type Func[S any] func(ServerRouter, S)
 
-type RegistrarFuncWithErr[S any] func(ServerRouter, S) error
+type FuncWithErr[S any] func(ServerRouter, S) error
 
-type CtxRegistrarFunc[S any] func(context.Context, ServerRouter, S)
+type CtxFunc[S any] func(context.Context, ServerRouter, S)
 
-type CtxRegistrarFuncWithErr[S any] func(context.Context, ServerRouter, S) error
+type CtxFuncWithErr[S any] func(context.Context, ServerRouter, S) error
 
 type Registrar interface {
 	RegisterToHTTP(context.Context, ServerRouter) error
@@ -37,37 +37,37 @@ type Registrar interface {
 
 type registrar[S any] struct {
 	s S
-	f CtxRegistrarFuncWithErr[S]
+	f CtxFuncWithErr[S]
 }
 
 var _ Registrar = (*registrar[any])(nil)
 
-func NewRegistrar[S any](s S, f RegistrarFunc[S]) Registrar {
+func New[S any](s S, f Func[S]) Registrar {
 	cf := func(ctx context.Context, r ServerRouter, s S) error {
 		f(r, s)
 		return nil
 	}
-	return NewCtxRegistrarWithErr(s, cf)
+	return NewCtxWithErr(s, cf)
 }
 
-func NewCtxRegistrar[S any](s S, f CtxRegistrarFunc[S]) Registrar {
+func NewCtx[S any](s S, f CtxFunc[S]) Registrar {
 	cf := func(ctx context.Context, r ServerRouter, s S) error {
 		f(ctx, r, s)
 		return nil
 	}
-	return NewCtxRegistrarWithErr(s, cf)
+	return NewCtxWithErr(s, cf)
 }
 
-// NewRegistrarWithErr creates a registrar with returning error.
-func NewRegistrarWithErr[S any](s S, f RegistrarFuncWithErr[S]) Registrar {
+// NewWithErr creates a registrar with returning error.
+func NewWithErr[S any](s S, f FuncWithErr[S]) Registrar {
 	cf := func(ctx context.Context, r ServerRouter, s S) error {
 		return f(r, s)
 	}
-	return NewCtxRegistrarWithErr(s, cf)
+	return NewCtxWithErr(s, cf)
 }
 
-// NewCtxRegistrarWithErr creates a registrar with a context parameter and returning error.
-func NewCtxRegistrarWithErr[S any](s S, f CtxRegistrarFuncWithErr[S]) Registrar {
+// NewCtxWithErr creates a registrar with a context parameter and returning error.
+func NewCtxWithErr[S any](s S, f CtxFuncWithErr[S]) Registrar {
 	h := &registrar[S]{
 		s: s,
 		f: f,
