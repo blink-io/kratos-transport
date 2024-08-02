@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
-	kHttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
@@ -42,25 +42,25 @@ func WithMiddleware(m ...middleware.Middleware) ServerOption {
 	}
 }
 
-func WithFilter(filters ...kHttp.FilterFunc) ServerOption {
+func WithFilter(filters ...khttp.FilterFunc) ServerOption {
 	return func(s *Server) {
 		s.filters = filters
 	}
 }
 
-func WithRequestDecoder(dec kHttp.DecodeRequestFunc) ServerOption {
+func WithRequestDecoder(dec khttp.DecodeRequestFunc) ServerOption {
 	return func(s *Server) {
 		s.dec = dec
 	}
 }
 
-func WithResponseEncoder(en kHttp.EncodeResponseFunc) ServerOption {
+func WithResponseEncoder(en khttp.EncodeResponseFunc) ServerOption {
 	return func(s *Server) {
 		s.enc = en
 	}
 }
 
-func WithErrorEncoder(en kHttp.EncodeErrorFunc) ServerOption {
+func WithErrorEncoder(en khttp.EncodeErrorFunc) ServerOption {
 	return func(s *Server) {
 		s.ene = en
 	}

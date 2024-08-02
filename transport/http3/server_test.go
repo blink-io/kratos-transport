@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"testing"
 
-	kHttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
 
 	"github.com/quic-go/quic-go"
@@ -59,14 +59,14 @@ func TestServer(t *testing.T) {
 	}()
 }
 
-func GetHygrothermograph(ctx context.Context, cli *kHttp.Client, in *api.Hygrothermograph, opts ...kHttp.CallOption) (*api.Hygrothermograph, error) {
+func GetHygrothermograph(ctx context.Context, cli *khttp.Client, in *api.Hygrothermograph, opts ...khttp.CallOption) (*api.Hygrothermograph, error) {
 	var out api.Hygrothermograph
 
 	pattern := "/hygrothermograph"
 	path := binding.EncodeURL(pattern, in, true)
 
-	opts = append(opts, kHttp.Operation("/GetHygrothermograph"))
-	opts = append(opts, kHttp.PathTemplate(pattern))
+	opts = append(opts, khttp.Operation("/GetHygrothermograph"))
+	opts = append(opts, khttp.PathTemplate(pattern))
 
 	err := cli.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -76,14 +76,14 @@ func GetHygrothermograph(ctx context.Context, cli *kHttp.Client, in *api.Hygroth
 	return &out, nil
 }
 
-func CreateHygrothermograph(ctx context.Context, cli *kHttp.Client, in *api.Hygrothermograph, opts ...kHttp.CallOption) (*api.Hygrothermograph, error) {
+func CreateHygrothermograph(ctx context.Context, cli *khttp.Client, in *api.Hygrothermograph, opts ...khttp.CallOption) (*api.Hygrothermograph, error) {
 	var out api.Hygrothermograph
 
 	pattern := "/hygrothermograph"
 	path := binding.EncodeURL(pattern, in, false)
 
-	opts = append(opts, kHttp.Operation("/CreateHygrothermograph"))
-	opts = append(opts, kHttp.PathTemplate(pattern))
+	opts = append(opts, khttp.Operation("/CreateHygrothermograph"))
+	opts = append(opts, khttp.PathTemplate(pattern))
 
 	err := cli.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -105,10 +105,10 @@ func TestClient(t *testing.T) {
 		InsecureSkipVerify: true,
 		RootCAs:            pool,
 	}
-	cli, err := kHttp.NewClient(ctx,
-		kHttp.WithEndpoint("127.0.0.1:8800"),
-		kHttp.WithTLSConfig(tlsConf),
-		kHttp.WithTransport(&http3.RoundTripper{TLSClientConfig: tlsConf, QuicConfig: &qconf}),
+	cli, err := khttp.NewClient(ctx,
+		khttp.WithEndpoint("127.0.0.1:8800"),
+		khttp.WithTLSConfig(tlsConf),
+		khttp.WithTransport(&http3.RoundTripper{TLSClientConfig: tlsConf, QuicConfig: &qconf}),
 	)
 	assert.Nil(t, err)
 	assert.NotNil(t, cli)
@@ -117,11 +117,11 @@ func TestClient(t *testing.T) {
 	req.Humidity = strconv.FormatInt(int64(rand.Intn(100)), 10)
 	req.Temperature = strconv.FormatInt(int64(rand.Intn(100)), 10)
 
-	resp, err := GetHygrothermograph(ctx, cli, &req, kHttp.EmptyCallOption{})
+	resp, err := GetHygrothermograph(ctx, cli, &req, khttp.EmptyCallOption{})
 	assert.Nil(t, err)
 	t.Log(resp)
 
-	resp, err = CreateHygrothermograph(ctx, cli, &req, kHttp.EmptyCallOption{})
+	resp, err = CreateHygrothermograph(ctx, cli, &req, khttp.EmptyCallOption{})
 	assert.Nil(t, err)
 	t.Log(resp)
 }

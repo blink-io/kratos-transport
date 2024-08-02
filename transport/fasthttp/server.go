@@ -15,7 +15,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
-	kHttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
 var (
@@ -34,9 +34,9 @@ type Server struct {
 
 	filters []FilterFunc
 	ms      []middleware.Middleware
-	dec     kHttp.DecodeRequestFunc
-	enc     kHttp.EncodeResponseFunc
-	ene     kHttp.EncodeErrorFunc
+	dec     khttp.DecodeRequestFunc
+	enc     khttp.EncodeResponseFunc
+	ene     khttp.EncodeErrorFunc
 
 	strictSlash bool
 	router      *router.Router
@@ -45,9 +45,9 @@ type Server struct {
 func NewServer(opts ...ServerOption) *Server {
 	srv := &Server{
 		timeout:     1 * time.Second,
-		dec:         kHttp.DefaultRequestDecoder,
-		enc:         kHttp.DefaultResponseEncoder,
-		ene:         kHttp.DefaultErrorEncoder,
+		dec:         khttp.DefaultRequestDecoder,
+		enc:         khttp.DefaultResponseEncoder,
+		ene:         khttp.DefaultErrorEncoder,
 		strictSlash: true,
 		router:      router.New(),
 	}

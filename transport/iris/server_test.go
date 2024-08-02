@@ -11,7 +11,7 @@ import (
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
 
-	kHttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +43,7 @@ func TestServer(t *testing.T) {
 		var out api.Hygrothermograph
 		out.Humidity = strconv.FormatInt(int64(rand.Intn(100)), 10)
 		out.Temperature = strconv.FormatInt(int64(rand.Intn(100)), 10)
-		_, _ = ctx.JSON(&out)
+		_ = ctx.JSON(&out)
 	})
 
 	if err := srv.Start(ctx); err != nil {
@@ -60,25 +60,25 @@ func TestServer(t *testing.T) {
 func TestClient(t *testing.T) {
 	ctx := context.Background()
 
-	cli, err := kHttp.NewClient(ctx,
-		kHttp.WithEndpoint("127.0.0.1:8800"),
+	cli, err := khttp.NewClient(ctx,
+		khttp.WithEndpoint("127.0.0.1:8800"),
 	)
 	assert.Nil(t, err)
 	assert.NotNil(t, cli)
 
-	resp, err := GetHygrothermograph(ctx, cli, nil, kHttp.EmptyCallOption{})
+	resp, err := GetHygrothermograph(ctx, cli, nil, khttp.EmptyCallOption{})
 	assert.Nil(t, err)
 	t.Log(resp)
 }
 
-func GetHygrothermograph(ctx context.Context, cli *kHttp.Client, in *api.Hygrothermograph, opts ...kHttp.CallOption) (*api.Hygrothermograph, error) {
+func GetHygrothermograph(ctx context.Context, cli *khttp.Client, in *api.Hygrothermograph, opts ...khttp.CallOption) (*api.Hygrothermograph, error) {
 	var out api.Hygrothermograph
 
 	pattern := "/hygrothermograph"
 	path := binding.EncodeURL(pattern, in, true)
 
-	opts = append(opts, kHttp.Operation("/GetHygrothermograph"))
-	opts = append(opts, kHttp.PathTemplate(pattern))
+	opts = append(opts, khttp.Operation("/GetHygrothermograph"))
+	opts = append(opts, khttp.PathTemplate(pattern))
 
 	err := cli.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

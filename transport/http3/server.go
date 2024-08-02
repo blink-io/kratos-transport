@@ -15,11 +15,15 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
-	kHttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/gorilla/mux"
 	"github.com/quic-go/quic-go/http3"
+)
+
+const (
+	SupportPackageIsVersion1 = khttp.SupportPackageIsVersion1
 )
 
 var (
@@ -36,11 +40,11 @@ type Server struct {
 
 	err error
 
-	filters []kHttp.FilterFunc
+	filters []khttp.FilterFunc
 	ms      []middleware.Middleware
-	dec     kHttp.DecodeRequestFunc
-	enc     kHttp.EncodeResponseFunc
-	ene     kHttp.EncodeErrorFunc
+	dec     khttp.DecodeRequestFunc
+	enc     khttp.EncodeResponseFunc
+	ene     khttp.EncodeErrorFunc
 
 	router      *mux.Router
 	strictSlash bool
@@ -49,9 +53,9 @@ type Server struct {
 func NewServer(opts ...ServerOption) *Server {
 	srv := &Server{
 		timeout:     1 * time.Second,
-		dec:         kHttp.DefaultRequestDecoder,
-		enc:         kHttp.DefaultResponseEncoder,
-		ene:         kHttp.DefaultErrorEncoder,
+		dec:         khttp.DefaultRequestDecoder,
+		enc:         khttp.DefaultResponseEncoder,
+		ene:         khttp.DefaultErrorEncoder,
 		strictSlash: true,
 	}
 
@@ -78,7 +82,7 @@ func (s *Server) init(opts ...ServerOption) {
 	s.router.NotFoundHandler = http.DefaultServeMux
 	s.router.MethodNotAllowedHandler = http.DefaultServeMux
 
-	s.Server.Handler = kHttp.FilterChain(s.filters...)(s.router)
+	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
 
 	_, _ = s.Endpoint()
 }
@@ -119,7 +123,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.Close()
 }
 
-func (s *Server) Route(prefix string, filters ...kHttp.FilterFunc) *Router {
+func (s *Server) Route(prefix string, filters ...khttp.FilterFunc) *Router {
 	return newRouter(prefix, s, filters...)
 }
 

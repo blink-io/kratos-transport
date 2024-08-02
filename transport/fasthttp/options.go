@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
-	kHttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
 type ServerOption func(*Server)
@@ -40,19 +40,19 @@ func WithFilter(filters ...FilterFunc) ServerOption {
 	}
 }
 
-func WithRequestDecoder(dec kHttp.DecodeRequestFunc) ServerOption {
+func WithRequestDecoder(dec khttp.DecodeRequestFunc) ServerOption {
 	return func(o *Server) {
 		o.dec = dec
 	}
 }
 
-func WithResponseEncoder(en kHttp.EncodeResponseFunc) ServerOption {
+func WithResponseEncoder(en khttp.EncodeResponseFunc) ServerOption {
 	return func(o *Server) {
 		o.enc = en
 	}
 }
 
-func WithErrorEncoder(en kHttp.EncodeErrorFunc) ServerOption {
+func WithErrorEncoder(en khttp.EncodeErrorFunc) ServerOption {
 	return func(o *Server) {
 		o.ene = en
 	}
