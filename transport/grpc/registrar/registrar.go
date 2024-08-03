@@ -3,6 +3,7 @@ package registrar
 import (
 	"context"
 
+	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 )
 
@@ -66,4 +67,10 @@ func NewCtxWithErr[S any](s S, f CtxFuncWithErr[S]) Registrar {
 
 func (h registrar[S]) RegisterToGRPC(ctx context.Context, r ServiceRegistrar) error {
 	return h.f(ctx, r, h.s)
+}
+
+func IsServerThen(s any, f func(server *kgrpc.Server)) {
+	if v, ok := s.(*kgrpc.Server); ok {
+		f(v)
+	}
 }
