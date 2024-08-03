@@ -36,12 +36,13 @@ type Server struct {
 
 	err error
 
-	filters []khttp.FilterFunc
-	ms      []middleware.Middleware
-	dec     khttp.DecodeRequestFunc
-	enc     khttp.EncodeResponseFunc
-	ene     khttp.EncodeErrorFunc
-
+	filters     []khttp.FilterFunc
+	ms          []middleware.Middleware
+	decVars     khttp.DecodeRequestFunc
+	decQuery    khttp.DecodeRequestFunc
+	decBody     khttp.DecodeRequestFunc
+	enc         khttp.EncodeResponseFunc
+	ene         khttp.EncodeErrorFunc
 	router      *mux.Router
 	strictSlash bool
 }
@@ -49,10 +50,13 @@ type Server struct {
 func NewServer(opts ...ServerOption) *Server {
 	srv := &Server{
 		timeout:     1 * time.Second,
-		dec:         khttp.DefaultRequestDecoder,
+		decVars:     khttp.DefaultRequestVars,
+		decQuery:    khttp.DefaultRequestQuery,
+		decBody:     khttp.DefaultRequestDecoder,
 		enc:         khttp.DefaultResponseEncoder,
 		ene:         khttp.DefaultErrorEncoder,
 		strictSlash: true,
+		router:      mux.NewRouter(),
 	}
 
 	srv.init(opts...)
@@ -64,17 +68,14 @@ func (s *Server) init(opts ...ServerOption) {
 	s.Server = &http3.Server{
 		Addr: ":8443",
 	}
-
+	s.router.NotFoundHandler = http.DefaultServeMux
+	s.router.MethodNotAllowedHandler = http.DefaultServeMux
 	for _, o := range opts {
 		o(s)
 	}
 
+	s.router.StrictSlash(s.strictSlash)
 	s.Server.TLSConfig = s.tlsConf
-
-	s.router = mux.NewRouter().StrictSlash(s.strictSlash)
-	s.router.NotFoundHandler = http.DefaultServeMux
-	s.router.MethodNotAllowedHandler = http.DefaultServeMux
-
 	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
 
 	_, _ = s.Endpoint()
