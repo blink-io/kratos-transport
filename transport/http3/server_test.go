@@ -19,6 +19,7 @@ import (
 
 	api "github.com/tx7do/kratos-transport/testing/api/protobuf"
 	"github.com/tx7do/kratos-transport/testing/tlsutil"
+	kthttp "github.com/tx7do/kratos-transport/transport/http"
 )
 
 func HygrothermographHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +39,29 @@ func HygrothermographHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(&out)
 }
 
+type MyInfo2Req struct {
+	Action string `json:"action"`
+}
+
+type MyInfo2Res struct {
+	Action     string `json:"action"`
+	Message    string `json:"message"`
+	StatusCode int    `json:"status_code"`
+}
+
+func info2() khttp.HandlerFunc {
+
+	hdlr := func(ctx context.Context, req *MyInfo2Req) (*MyInfo2Res, error) {
+		res := &MyInfo2Res{
+			Action:     req.Action,
+			Message:    "You are testing my info2",
+			StatusCode: 200,
+		}
+		return res, nil
+	}
+	return kthttp.GET[MyInfo2Req, MyInfo2Res]("info", hdlr)
+}
+
 func TestServer(t *testing.T) {
 	ctx := context.Background()
 
@@ -47,6 +71,9 @@ func TestServer(t *testing.T) {
 	)
 
 	srv.HandleFunc("/hygrothermograph", HygrothermographHandler)
+
+	sr := srv.Route("/my")
+	sr.GET("/info2", info2())
 
 	if err := srv.Start(ctx); err != nil {
 		panic(err)
@@ -93,6 +120,23 @@ func CreateHygrothermograph(ctx context.Context, cli *khttp.Client, in *api.Hygr
 	return &out, nil
 }
 
+func GetMyInfo2(ctx context.Context, cli *khttp.Client, in *MyInfo2Req, opts ...khttp.CallOption) (*MyInfo2Res, error) {
+	var out MyInfo2Res
+
+	pattern := "/my/info2"
+	path := binding.EncodeURL(pattern, in, false)
+
+	opts = append(opts, khttp.Operation("/my/info2"))
+	opts = append(opts, khttp.PathTemplate(pattern))
+
+	err := cli.Invoke(ctx, "GET", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
+}
+
 func TestClient(t *testing.T) {
 	ctx := context.Background()
 
@@ -118,4 +162,10 @@ func TestClient(t *testing.T) {
 	resp, err = CreateHygrothermograph(ctx, cli, &req, khttp.EmptyCallOption{})
 	assert.Nil(t, err)
 	t.Log(resp)
+
+	iresp, ierr := GetMyInfo2(ctx, cli, &MyInfo2Req{
+		Action: "Test My Info2",
+	}, khttp.EmptyCallOption{})
+	assert.Nil(t, ierr)
+	t.Log(iresp)
 }

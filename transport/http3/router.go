@@ -9,7 +9,7 @@ import (
 )
 
 // HandlerFunc defines a function to serve HTTP requests.
-type HandlerFunc func(Context) error
+type HandlerFunc = khttp.HandlerFunc
 
 // Router is an HTTP router.
 type Router struct {

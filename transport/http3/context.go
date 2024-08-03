@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
 	"github.com/gorilla/mux"
 )
@@ -17,28 +18,30 @@ import (
 var _ Context = (*wrapper)(nil)
 
 // Context is an HTTP Context.
-type Context interface {
-	context.Context
-	Vars() url.Values
-	Query() url.Values
-	Form() url.Values
-	Header() http.Header
-	Request() *http.Request
-	Response() http.ResponseWriter
-	Middleware(middleware.Handler) middleware.Handler
-	Bind(interface{}) error
-	BindVars(interface{}) error
-	BindQuery(interface{}) error
-	BindForm(interface{}) error
-	Returns(interface{}, error) error
-	Result(int, interface{}) error
-	JSON(int, interface{}) error
-	XML(int, interface{}) error
-	String(int, string) error
-	Blob(int, string, []byte) error
-	Stream(int, string, io.Reader) error
-	Reset(http.ResponseWriter, *http.Request)
-}
+type Context = khttp.Context
+
+//type Context interface {
+//	context.Context
+//	Vars() url.Values
+//	Query() url.Values
+//	Form() url.Values
+//	Header() http.Header
+//	Request() *http.Request
+//	Response() http.ResponseWriter
+//	Middleware(middleware.Handler) middleware.Handler
+//	Bind(interface{}) error
+//	BindVars(interface{}) error
+//	BindQuery(interface{}) error
+//	BindForm(interface{}) error
+//	Returns(interface{}, error) error
+//	Result(int, interface{}) error
+//	JSON(int, interface{}) error
+//	XML(int, interface{}) error
+//	String(int, string) error
+//	Blob(int, string, []byte) error
+//	Stream(int, string, io.Reader) error
+//	Reset(http.ResponseWriter, *http.Request)
+//}
 
 type responseWriter struct {
 	code int
