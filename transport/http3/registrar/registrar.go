@@ -21,7 +21,7 @@ var _ ServerRouter = (*http3.Server)(nil)
 type RegisterFunc func(context.Context, ServerRouter) error
 
 type WithRegistrar interface {
-	HTTPRegistrar(context.Context) RegisterFunc
+	HTTP3Registrar(context.Context) RegisterFunc
 }
 
 type Func[S any] func(ServerRouter, S)
