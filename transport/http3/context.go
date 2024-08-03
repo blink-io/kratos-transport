@@ -91,7 +91,7 @@ func (c *wrapper) Response() http.ResponseWriter { return c.res }
 func (c *wrapper) Middleware(h middleware.Handler) middleware.Handler {
 	return middleware.Chain(c.router.srv.ms...)(h)
 }
-func (c *wrapper) Bind(v interface{}) error      { return c.router.srv.dec(c.req, v) }
+func (c *wrapper) Bind(v interface{}) error      { return c.router.srv.decBody(c.req, v) }
 func (c *wrapper) BindVars(v interface{}) error  { return binding.BindQuery(c.Vars(), v) }
 func (c *wrapper) BindQuery(v interface{}) error { return binding.BindQuery(c.Query(), v) }
 func (c *wrapper) BindForm(v interface{}) error  { return binding.BindForm(c.req, v) }

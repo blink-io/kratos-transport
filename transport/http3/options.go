@@ -44,7 +44,7 @@ func Filter(filters ...khttp.FilterFunc) ServerOption {
 
 func RequestDecoder(dec khttp.DecodeRequestFunc) ServerOption {
 	return func(o *Server) {
-		o.dec = dec
+		o.decBody = dec
 	}
 }
 
