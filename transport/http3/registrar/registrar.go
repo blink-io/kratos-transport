@@ -78,7 +78,7 @@ type RouteSupport interface {
 	Route(prefix string, filters ...khttp.FilterFunc) *http3.Router
 }
 
-func SupportRouteIf(s any, f func(RouteSupport)) {
+func SupportsRouteThen(s any, f func(RouteSupport)) {
 	if v, ok := s.(RouteSupport); ok {
 		f(v)
 	}
