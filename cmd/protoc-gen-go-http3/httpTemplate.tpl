@@ -62,8 +62,8 @@ type {{.ServiceType}}HTTP3ClientImpl struct{
 	cc *http.Client
 }
 
-func New{{.ServiceType}}HTTP3Client (client *http.Client) {{.ServiceType}}HTTPClient {
-	return &{{.ServiceType}}HTTPClientImpl{client}
+func New{{.ServiceType}}HTTP3Client (client *http.Client) {{.ServiceType}}HTTP3Client {
+	return &{{.ServiceType}}HTTP3ClientImpl{client}
 }
 
 {{range .MethodSets}}
