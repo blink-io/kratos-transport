@@ -92,7 +92,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
-	log.Infof("[redis] server listening on: %s", s.address)
+	log.Infof("[Thrift] server listening on: %s", s.address)
 
 	s.Server = thrift.NewTSimpleServer4(s.processor, serverTransport, transportFactory, protocolFactory)
 	if err := s.Server.Serve(); err != nil {
@@ -103,7 +103,7 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	log.Info("[thrift] server stopping")
+	log.Info("[Thrift] server stopping")
 
 	if s.Server != nil {
 		return s.Server.Stop()
