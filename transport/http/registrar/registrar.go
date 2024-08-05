@@ -75,8 +75,8 @@ func NewCtxWithErr[S any](s S, f CtxFuncWithErr[S]) Registrar {
 	return h
 }
 
-func (h registrar[S]) RegisterToHTTP(ctx context.Context, r RouterRegistrar) error {
-	return h.f(ctx, r, h.s)
+func (h registrar[S]) RegisterToHTTP(ctx context.Context, rr RouterRegistrar) error {
+	return h.f(ctx, rr, h.s)
 }
 
 type RouteSupport interface {

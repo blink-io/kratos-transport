@@ -65,8 +65,8 @@ func NewCtxWithErr[S any](s S, f CtxFuncWithErr[S]) Registrar {
 	return h
 }
 
-func (h registrar[S]) RegisterToGRPC(ctx context.Context, r ServiceRegistrar) error {
-	return h.f(ctx, r, h.s)
+func (h registrar[S]) RegisterToGRPC(ctx context.Context, rr ServiceRegistrar) error {
+	return h.f(ctx, rr, h.s)
 }
 
 func IsServerThen(s any, f func(server *kgrpc.Server)) {
