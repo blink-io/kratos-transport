@@ -11,11 +11,11 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
-
 	"github.com/go-kratos/kratos/v2/transport"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/quic-go/quic-go/http3"
+	"github.com/tx7do/kratos-transport/transport/http3/matcher"
 )
 
 const (
@@ -29,15 +29,13 @@ var (
 
 type Server struct {
 	*http3.Server
-
-	tlsConf  *tls.Config
-	timeout  time.Duration
-	endpoint *url.URL
-
-	err error
-
-	filters     []khttp.FilterFunc
-	ms          []middleware.Middleware
+	tlsConf    *tls.Config
+	endpoint   *url.URL
+	err        error
+	timeout    time.Duration
+	filters    []khttp.FilterFunc
+	middleware matcher.Matcher
+	//ms          []middleware.Middleware
 	decVars     khttp.DecodeRequestFunc
 	decQuery    khttp.DecodeRequestFunc
 	decBody     khttp.DecodeRequestFunc
@@ -79,6 +77,15 @@ func (s *Server) init(opts ...ServerOption) {
 	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
 
 	_, _ = s.Endpoint()
+}
+
+// Use uses a service middleware with selector.
+// selector:
+//   - '/*'
+//   - '/helloworld.v1.Greeter/*'
+//   - '/helloworld.v1.Greeter/SayHello'
+func (s *Server) Use(selector string, m ...middleware.Middleware) {
+	s.middleware.Add(selector, m...)
 }
 
 func (s *Server) Endpoint() (*url.URL, error) {
@@ -176,4 +183,32 @@ func (s *Server) filter() mux.MiddlewareFunc {
 			next.ServeHTTP(w, tr.request)
 		})
 	}
+}
+
+// WalkRoute walks the router and all its sub-routers, calling walkFn for each route in the tree.
+func (s *Server) WalkRoute(fn khttp.WalkRouteFunc) error {
+	return s.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		methods, err := route.GetMethods()
+		if err != nil {
+			return nil // ignore no methods
+		}
+		path, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		for _, method := range methods {
+			if err := fn(khttp.RouteInfo{Method: method, Path: path}); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// WalkHandle walks the router and all its sub-routers, calling walkFn for each route in the tree.
+func (s *Server) WalkHandle(handle func(method, path string, handler http.HandlerFunc)) error {
+	return s.WalkRoute(func(r khttp.RouteInfo) error {
+		handle(r.Method, r.Path, s.ServeHTTP)
+		return nil
+	})
 }
