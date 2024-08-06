@@ -48,6 +48,7 @@ type Server struct {
 func NewServer(opts ...ServerOption) *Server {
 	srv := &Server{
 		timeout:     1 * time.Second,
+		middleware:  matcher.New(),
 		decVars:     khttp.DefaultRequestVars,
 		decQuery:    khttp.DefaultRequestQuery,
 		decBody:     khttp.DefaultRequestDecoder,
