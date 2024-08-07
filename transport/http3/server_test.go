@@ -19,7 +19,6 @@ import (
 
 	api "github.com/tx7do/kratos-transport/testing/api/protobuf"
 	"github.com/tx7do/kratos-transport/testing/tlsutil"
-	kthttp "github.com/tx7do/kratos-transport/transport/http"
 )
 
 func HygrothermographHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,18 +48,18 @@ type MyInfo2Res struct {
 	StatusCode int    `json:"status_code"`
 }
 
-func info2() khttp.HandlerFunc {
-
-	hdlr := func(ctx context.Context, req *MyInfo2Req) (*MyInfo2Res, error) {
-		res := &MyInfo2Res{
-			Action:     req.Action,
-			Message:    "You are testing my info2",
-			StatusCode: 200,
-		}
-		return res, nil
-	}
-	return kthttp.GET[MyInfo2Req, MyInfo2Res]("info", hdlr)
-}
+//func info2() khttp.HandlerFunc {
+//
+//	hdlr := func(ctx context.Context, req *MyInfo2Req) (*MyInfo2Res, error) {
+//		res := &MyInfo2Res{
+//			Action:     req.Action,
+//			Message:    "You are testing my info2",
+//			StatusCode: 200,
+//		}
+//		return res, nil
+//	}
+//	return kthttp.GET[MyInfo2Req, MyInfo2Res]("info", hdlr)
+//}
 
 func TestServer(t *testing.T) {
 	ctx := context.Background()
@@ -72,8 +71,8 @@ func TestServer(t *testing.T) {
 
 	srv.HandleFunc("/hygrothermograph", HygrothermographHandler)
 
-	sr := srv.Route("/my")
-	sr.GET("/info2", info2())
+	//sr := srv.Route("/my")
+	//sr.GET("/info2", info2())
 
 	if err := srv.Start(ctx); err != nil {
 		panic(err)
