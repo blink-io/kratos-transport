@@ -6,3 +6,7 @@ PACKAGE_LIST =
 .PHONY: tag
 tag:
 	git tag -f $(APP_VERSION) && $(foreach item, $(PACKAGE_LIST), git tag -f $(item)$(APP_VERSION) && ) git push --tags --force
+
+.PHONY: upgrade
+upgrade:
+	go get -u -v ./...
