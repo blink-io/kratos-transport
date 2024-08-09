@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/quic-go/quic-go"
 	"github.com/stretchr/testify/require"
 
 	"github.com/tx7do/kratos-transport/transport/webtransport/mock"

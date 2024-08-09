@@ -7,6 +7,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"github.com/quic-go/quic-go"
 )
 
 const sessionCloseErrorCode quic.StreamErrorCode = 0x170d7b68

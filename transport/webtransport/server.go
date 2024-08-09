@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"github.com/quic-go/quic-go"
 	"io"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
+
+	"github.com/quic-go/quic-go"
 
 	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/go-kratos/kratos/v2/log"
@@ -81,7 +82,7 @@ func (s *Server) init(opts ...ServerOption) {
 
 	s.Server = &http3.Server{
 		Addr: ":443",
-		QuicConfig: &quic.Config{
+		QUICConfig: &quic.Config{
 			MaxIdleTimeout:  idleTimeout,
 			KeepAlivePeriod: idleTimeout / 2,
 		},
@@ -107,7 +108,7 @@ func (s *Server) init(opts ...ServerOption) {
 	}
 	s.Server.AdditionalSettings[settingsEnableWebtransport] = 1
 	s.Server.EnableDatagrams = true
-	s.Server.StreamHijacker = func(ft http3.FrameType, qConn quic.Connection, qStream quic.Stream, err error) (bool /* hijacked */, error) {
+	s.Server.StreamHijacker = func(ft http3.FrameType, qConn quic.ConnectionTracingID, qStream quic.Stream, err error) (bool /* hijacked */, error) {
 		if isWebTransportError(err) {
 			return true, nil
 		}
@@ -124,7 +125,7 @@ func (s *Server) init(opts ...ServerOption) {
 		s.sessions.AddStream(qConn, qStream, SessionID(id))
 		return true, nil
 	}
-	s.Server.UniStreamHijacker = func(st http3.StreamType, qConn quic.Connection, qStream quic.ReceiveStream, err error) (hijacked bool) {
+	s.Server.UniStreamHijacker = func(st http3.StreamType, qConn quic.ConnectionTracingID, qStream quic.ReceiveStream, err error) (hijacked bool) {
 		if st != webTransportUniStreamType && !isWebTransportError(err) {
 			return false
 		}
@@ -252,7 +253,7 @@ func (s *Server) addHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := s.sessions.AddSession(
-		hijacker.StreamCreator(),
+		hijacker.Connection(),
 		sID,
 		r.Body.(http3.HTTPStreamer).HTTPStream(),
 	)

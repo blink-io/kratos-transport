@@ -7,6 +7,7 @@ import (
 )
 
 var channelBufSize = 256
+
 var recvBufferSize = 256000
 
 type SessionID string

@@ -107,11 +107,11 @@ func (c *Client) init(opts ...ClientOption) {
 		c.sessions.AddUniStream(conn, str)
 		return true
 	}
-	if c.transport.QuicConfig == nil {
-		c.transport.QuicConfig = &quic.Config{}
+	if c.transport.QUICConfig == nil {
+		c.transport.QUICConfig = &quic.Config{}
 	}
-	if c.transport.QuicConfig.MaxIncomingStreams == 0 {
-		c.transport.QuicConfig.MaxIncomingStreams = 100
+	if c.transport.QUICConfig.MaxIncomingStreams == 0 {
+		c.transport.QUICConfig.MaxIncomingStreams = 100
 	}
 }
 
