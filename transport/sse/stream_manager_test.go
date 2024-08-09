@@ -1,9 +1,10 @@
 package sse
 
 import (
-	"github.com/stretchr/testify/assert"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func createStream(id StreamID) *Stream {

@@ -2,11 +2,12 @@ package mqtt
 
 import (
 	"fmt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 func setAddrs(addrs []string) []string {

@@ -2,8 +2,9 @@ package asynq
 
 import (
 	"crypto/tls"
-	"github.com/go-kratos/kratos/v2/encoding"
 	"time"
+
+	"github.com/go-kratos/kratos/v2/encoding"
 
 	"github.com/hibiken/asynq"
 )

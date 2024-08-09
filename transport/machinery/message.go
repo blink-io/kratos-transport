@@ -1,9 +1,10 @@
 package machinery
 
 import (
+	"strconv"
+
 	"github.com/RichardKnop/machinery/v2/tasks"
 	"go.opentelemetry.io/otel/propagation"
-	"strconv"
 )
 
 var _ propagation.TextMapCarrier = (*MessageCarrier)(nil)

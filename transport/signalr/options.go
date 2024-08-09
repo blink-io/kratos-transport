@@ -2,8 +2,9 @@ package signalr
 
 import (
 	"crypto/tls"
-	"github.com/philippseith/signalr"
 	"time"
+
+	"github.com/philippseith/signalr"
 
 	"github.com/go-kratos/kratos/v2/encoding"
 )

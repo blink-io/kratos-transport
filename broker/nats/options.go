@@ -1,9 +1,10 @@
 package nats
 
 import (
+	"time"
+
 	natsGo "github.com/nats-io/nats.go"
 	"github.com/tx7do/kratos-transport/broker"
-	"time"
 )
 
 type optionsKey struct{}

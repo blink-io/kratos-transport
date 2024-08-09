@@ -2,6 +2,7 @@ package rocketmq
 
 import (
 	"crypto/tls"
+
 	rocketmqOption "github.com/tx7do/kratos-transport/broker/rocketmq/option"
 
 	"go.opentelemetry.io/otel/propagation"

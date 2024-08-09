@@ -1,8 +1,6 @@
 package gin
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/go-kratos/kratos/v2/log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -10,6 +8,9 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // GinLogger 接收gin框架默认的日志

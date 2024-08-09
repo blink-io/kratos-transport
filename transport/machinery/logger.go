@@ -2,6 +2,7 @@ package machinery
 
 import (
 	"fmt"
+
 	"github.com/RichardKnop/logging"
 	"github.com/go-kratos/kratos/v2/log"
 )

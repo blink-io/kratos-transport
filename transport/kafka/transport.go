@@ -3,7 +3,7 @@ package kafka
 import (
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport"
-	KAFKA "github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 )
 
 const (
@@ -51,7 +51,7 @@ func (tr *Transport) NodeFilters() []selector.NodeFilter {
 	return tr.nodeFilters
 }
 
-type headerCarrier KAFKA.Header
+type headerCarrier kafkago.Header
 
 // Get returns the value associated with the passed key.
 func (hc headerCarrier) Get(_ string) string {

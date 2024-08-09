@@ -3,9 +3,10 @@ package machinery
 import (
 	"context"
 	"errors"
-	eagerBackend "github.com/RichardKnop/machinery/v2/backends/eager"
 	"net/url"
 	"sync"
+
+	eagerBackend "github.com/RichardKnop/machinery/v2/backends/eager"
 
 	"go.opentelemetry.io/otel/attribute"
 	semConv "go.opentelemetry.io/otel/semconv/v1.12.0"

@@ -3,6 +3,7 @@ package pulsar
 import (
 	"context"
 	"errors"
+
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/tx7do/kratos-transport/broker"
 )
