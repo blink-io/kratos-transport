@@ -2,6 +2,7 @@ package thrift
 
 import (
 	"crypto/tls"
+
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -22,6 +23,8 @@ type clientOptions struct {
 	bufferSize int
 
 	secure bool
+
+	tconf *thrift.TConfiguration
 }
 
 type Connection struct {
@@ -47,40 +50,39 @@ func dial(opts ...ClientOption) (*Connection, error) {
 		bufferSize: 8192,
 		buffered:   false,
 		framed:     false,
-		protocol:   "binary",
+		protocol:   ProtocolBinary,
 		secure:     false,
+		tconf: &thrift.TConfiguration{
+			TLSConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
 	}
 
 	for _, o := range opts {
 		o(cli)
 	}
 
-	protocolFactory := createProtocolFactory(cli.protocol)
+	protocolFactory := createProtocolFactory(cli.protocol, cli.tconf)
 	if protocolFactory == nil {
 		return nil, ErrInvalidProtocol
 	}
 
-	cfg := &thrift.TConfiguration{
-		TLSConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-
-	transportFactory := createTransportFactory(cfg, cli.buffered, cli.framed, cli.bufferSize)
+	transportFactory := createTransportFactory(cli.tconf, cli.buffered, cli.framed, cli.bufferSize)
 	if transportFactory == nil {
 		return nil, ErrInvalidTransport
 	}
 
-	clientTransport, err := createClientTransport(transportFactory, cli.endpoint, cli.secure, cfg)
+	clientTransport, err := createClientTransport(transportFactory, cli.endpoint, cli.secure, cli.tconf)
 	if err != nil {
 		return nil, err
 	}
 
-	iProto := protocolFactory.GetProtocol(clientTransport)
-	oProto := protocolFactory.GetProtocol(clientTransport)
+	inProto := protocolFactory.GetProtocol(clientTransport)
+	outProto := protocolFactory.GetProtocol(clientTransport)
 
 	return &Connection{
-		Client:    thrift.NewTStandardClient(iProto, oProto),
+		Client:    thrift.NewTStandardClient(inProto, outProto),
 		Transport: clientTransport,
 	}, nil
 }

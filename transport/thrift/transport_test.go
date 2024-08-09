@@ -2,10 +2,11 @@ package thrift
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/transport"
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/go-kratos/kratos/v2/transport"
 )
 
 func TestTransport_Kind(t *testing.T) {

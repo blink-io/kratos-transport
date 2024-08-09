@@ -2,19 +2,28 @@ package thrift
 
 import (
 	"crypto/tls"
+
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
-func createProtocolFactory(protocol string) thrift.TProtocolFactory {
+const (
+	ProtocolCompact    = "compact"
+	ProtocolBinary     = "binary"
+	ProtocolSimpleJSON = "simplejson"
+	ProtocolJSON       = "json"
+	ProtocolDebug      = "debug"
+)
+
+func createProtocolFactory(protocol string, conf *thrift.TConfiguration) thrift.TProtocolFactory {
 	switch protocol {
-	case "compact":
-		return thrift.NewTCompactProtocolFactoryConf(nil)
-	case "simplejson":
-		return thrift.NewTSimpleJSONProtocolFactoryConf(nil)
-	case "json":
+	case ProtocolCompact:
+		return thrift.NewTCompactProtocolFactoryConf(conf)
+	case ProtocolSimpleJSON:
+		return thrift.NewTSimpleJSONProtocolFactoryConf(conf)
+	case ProtocolJSON:
 		return thrift.NewTJSONProtocolFactory()
-	case "binary", "":
-		return thrift.NewTBinaryProtocolFactoryConf(nil)
+	case ProtocolBinary, "":
+		return thrift.NewTBinaryProtocolFactoryConf(conf)
 	default:
 		return nil
 	}

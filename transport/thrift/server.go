@@ -37,6 +37,8 @@ type Server struct {
 	processor thrift.TProcessor
 
 	err error
+
+	tconf *thrift.TConfiguration
 }
 
 func NewServer(opts ...ServerOption) *Server {
@@ -44,7 +46,12 @@ func NewServer(opts ...ServerOption) *Server {
 		bufferSize: 8192,
 		buffered:   false,
 		framed:     false,
-		protocol:   "binary",
+		protocol:   ProtocolBinary,
+		tconf: &thrift.TConfiguration{
+			TLSConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
 	}
 
 	srv.init(opts...)
@@ -71,18 +78,12 @@ func (s *Server) Start(ctx context.Context) error {
 		return s.err
 	}
 
-	protocolFactory := createProtocolFactory(s.protocol)
+	protocolFactory := createProtocolFactory(s.protocol, s.tconf)
 	if protocolFactory == nil {
 		return ErrInvalidProtocol
 	}
 
-	cfg := &thrift.TConfiguration{
-		TLSConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-
-	transportFactory := createTransportFactory(cfg, s.buffered, s.framed, s.bufferSize)
+	transportFactory := createTransportFactory(s.tconf, s.buffered, s.framed, s.bufferSize)
 	if transportFactory == nil {
 		return ErrInvalidTransport
 	}

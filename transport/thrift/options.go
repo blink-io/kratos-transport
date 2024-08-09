@@ -2,6 +2,7 @@ package thrift
 
 import (
 	"crypto/tls"
+
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/go-kratos/kratos/v2/registry"
 )
@@ -37,6 +38,12 @@ func WithTransportConfig(buffered, framed bool, bufferSize int) ServerOption {
 		s.buffered = buffered
 		s.framed = framed
 		s.bufferSize = bufferSize
+	}
+}
+
+func WithTConfiguration(tconf *thrift.TConfiguration) ServerOption {
+	return func(c *Server) {
+		c.tconf = tconf
 	}
 }
 
@@ -76,5 +83,11 @@ func WithClientTransportConfig(buffered, framed bool, bufferSize int) ClientOpti
 		o.buffered = buffered
 		o.framed = framed
 		o.bufferSize = bufferSize
+	}
+}
+
+func WithClientTConfiguration(tconf *thrift.TConfiguration) ClientOption {
+	return func(c *clientOptions) {
+		c.tconf = tconf
 	}
 }
