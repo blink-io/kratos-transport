@@ -186,7 +186,8 @@ func (s *Server) Start(ctx context.Context) error {
 		return nil
 	}
 
-	if err := s.newWorker(s.consumerOption.consumerTag, s.consumerOption.concurrency, s.consumerOption.queue); err != nil {
+	err := s.newWorker(s.consumerOption.consumerTag, s.consumerOption.concurrency, s.consumerOption.queue)
+	if err != nil && !errors.Is(err, machinery.ErrWorkerQuitGracefully) {
 		return err
 	}
 
