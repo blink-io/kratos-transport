@@ -9,13 +9,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tx7do/kratos-transport/transport/http3/matcher"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/quic-go/quic-go/http3"
-	"github.com/tx7do/kratos-transport/transport/http3/matcher"
 )
 
 const (
@@ -124,7 +125,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 func (s *Server) Stop(ctx context.Context) error {
 	log.Info("[HTTP3] server stopping")
-	return s.Close()
+	return s.Shutdown(ctx)
 }
 
 func (s *Server) Route(prefix string, filters ...khttp.FilterFunc) *Router {
