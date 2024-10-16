@@ -3,7 +3,7 @@ package nats
 import (
 	"sync"
 
-	natsGo "github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
@@ -11,7 +11,7 @@ type subscriber struct {
 	sync.RWMutex
 
 	n       *natsBroker
-	s       *natsGo.Subscription
+	s       *nats.Subscription
 	options broker.SubscribeOptions
 	closed  bool
 }

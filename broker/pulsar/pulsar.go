@@ -10,12 +10,10 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
-
 	"github.com/tx7do/kratos-transport/broker"
 	"github.com/tx7do/kratos-transport/tracing"
-
 	"go.opentelemetry.io/otel/attribute"
-	semConv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -413,9 +411,9 @@ func (pb *pulsarBroker) startProducerSpan(ctx context.Context, topic string, msg
 	carrier := NewProducerMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("pulsar"),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(topic),
+		semconv.MessagingSystemKey.String("pulsar"),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(topic),
 	}
 
 	var span trace.Span
@@ -430,7 +428,7 @@ func (pb *pulsarBroker) finishProducerSpan(span trace.Span, messageId string, er
 	}
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingMessageIDKey.String(messageId),
+		semconv.MessagingMessageIDKey.String(messageId),
 	}
 
 	pb.producerTracer.End(context.Background(), span, err, attrs...)
@@ -444,11 +442,11 @@ func (pb *pulsarBroker) startConsumerSpan(ctx context.Context, msg *pulsar.Consu
 	carrier := NewConsumerMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String(pb.Name()),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(msg.Topic()),
-		semConv.MessagingOperationReceive,
-		semConv.MessagingMessageIDKey.Int64(msg.ID().EntryID()),
+		semconv.MessagingSystemKey.String(pb.Name()),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(msg.Topic()),
+		semconv.MessagingOperationReceive,
+		semconv.MessagingMessageIDKey.Int64(msg.ID().EntryID()),
 	}
 
 	var span trace.Span

@@ -1,17 +1,17 @@
 package nats
 
 import (
-	natsGo "github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/otel/propagation"
 )
 
 var _ propagation.TextMapCarrier = (*MessageCarrier)(nil)
 
 type MessageCarrier struct {
-	msg *natsGo.Msg
+	msg *nats.Msg
 }
 
-func NewMessageCarrier(msg *natsGo.Msg) MessageCarrier {
+func NewMessageCarrier(msg *nats.Msg) MessageCarrier {
 	return MessageCarrier{msg: msg}
 }
 
@@ -24,7 +24,7 @@ func (c MessageCarrier) Get(key string) string {
 
 func (c MessageCarrier) Set(key, val string) {
 	if c.msg.Header == nil {
-		c.msg.Header = make(natsGo.Header)
+		c.msg.Header = make(nats.Header)
 	}
 	c.msg.Header.Set(key, val)
 }

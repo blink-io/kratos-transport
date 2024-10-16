@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 
 	"github.com/go-kratos/kratos/v2/encoding"
-	socketIo "github.com/googollee/go-socket.io"
+	socketio "github.com/googollee/go-socket.io"
 )
 
 type ServerOption func(o *Server)
@@ -39,19 +39,19 @@ func WithPath(path string) ServerOption {
 	}
 }
 
-func WithConnectHandler(namespace string, f func(socketIo.Conn) error) ServerOption {
+func WithConnectHandler(namespace string, f func(socketio.Conn) error) ServerOption {
 	return func(s *Server) {
 		s.Server.OnConnect(namespace, f)
 	}
 }
 
-func WithDisconnectHandler(namespace string, f func(socketIo.Conn, string)) ServerOption {
+func WithDisconnectHandler(namespace string, f func(socketio.Conn, string)) ServerOption {
 	return func(s *Server) {
 		s.Server.OnDisconnect(namespace, f)
 	}
 }
 
-func WithErrorHandler(namespace string, f func(socketIo.Conn, error)) ServerOption {
+func WithErrorHandler(namespace string, f func(socketio.Conn, error)) ServerOption {
 	return func(s *Server) {
 		s.Server.OnError(namespace, f)
 	}

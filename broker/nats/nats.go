@@ -7,18 +7,15 @@ import (
 	"sync"
 	"time"
 
-	kProto "github.com/go-kratos/kratos/v2/encoding/proto"
-	"google.golang.org/protobuf/proto"
-
+	kproto "github.com/go-kratos/kratos/v2/encoding/proto"
 	"github.com/go-kratos/kratos/v2/log"
-	natsGo "github.com/nats-io/nats.go"
-
+	"github.com/nats-io/nats.go"
 	"github.com/tx7do/kratos-transport/broker"
 	"github.com/tx7do/kratos-transport/tracing"
-
 	"go.opentelemetry.io/otel/attribute"
-	semConv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -33,8 +30,8 @@ type natsBroker struct {
 
 	options broker.Options
 
-	conn     *natsGo.Conn
-	natsOpts natsGo.Options
+	conn     *nats.Conn
+	natsOpts nats.Options
 
 	subscribers *broker.SubscriberSyncMap
 
@@ -100,7 +97,7 @@ func (b *natsBroker) setAddrs(addrs []string) []string {
 		cAddrs = append(cAddrs, addr)
 	}
 	if len(cAddrs) == 0 {
-		cAddrs = []string{natsGo.DefaultURL}
+		cAddrs = []string{nats.DefaultURL}
 	}
 	return cAddrs
 }
@@ -111,10 +108,10 @@ func (b *natsBroker) setOption(opts ...broker.Option) {
 	}
 
 	b.Once.Do(func() {
-		b.natsOpts = natsGo.GetDefaultOptions()
+		b.natsOpts = nats.GetDefaultOptions()
 	})
 
-	if value, ok := b.options.Context.Value(optionsKey{}).(natsGo.Options); ok {
+	if value, ok := b.options.Context.Value(optionsKey{}).(nats.Options); ok {
 		b.natsOpts = value
 	}
 
@@ -148,13 +145,13 @@ func (b *natsBroker) Connect() error {
 		return nil
 	}
 
-	status := natsGo.CLOSED
+	status := nats.CLOSED
 	if b.conn != nil {
 		status = b.conn.Status()
 	}
 
 	switch status {
-	case natsGo.CONNECTED, natsGo.RECONNECTING, natsGo.CONNECTING:
+	case nats.CONNECTED, nats.RECONNECTING, nats.CONNECTING:
 		b.connected = true
 		return nil
 	default: // DISCONNECTED or CLOSED or DRAINING
@@ -223,7 +220,7 @@ func (b *natsBroker) publish(ctx context.Context, topic string, buf []byte, opts
 		o(&options)
 	}
 
-	m := natsGo.NewMsg(topic)
+	m := nats.NewMsg(topic)
 	m.Data = buf
 
 	if headers, ok := options.Context.Value(headersKey{}).(map[string][]string); ok {
@@ -265,7 +262,7 @@ func (b *natsBroker) Subscribe(topic string, handler broker.Handler, binder brok
 		options: options,
 	}
 
-	fn := func(msg *natsGo.Msg) {
+	fn := func(msg *nats.Msg) {
 		var errSub error
 
 		m := &broker.Message{
@@ -281,7 +278,7 @@ func (b *natsBroker) Subscribe(topic string, handler broker.Handler, binder brok
 		eh := b.options.ErrorHandler
 
 		if binder != nil {
-			if b.options.Codec.Name() == kProto.Name {
+			if b.options.Codec.Name() == kproto.Name {
 				m.Body = binder().(proto.Message)
 			} else {
 				m.Body = binder()
@@ -321,7 +318,7 @@ func (b *natsBroker) Subscribe(topic string, handler broker.Handler, binder brok
 		b.finishConsumerSpan(span, errSub)
 	}
 
-	var sub *natsGo.Subscription
+	var sub *nats.Subscription
 	var err error
 
 	b.RLock()
@@ -366,7 +363,7 @@ func (b *natsBroker) request(ctx context.Context, topic string, buf []byte, opts
 		o(&options)
 	}
 
-	m := natsGo.NewMsg(topic)
+	m := nats.NewMsg(topic)
 	m.Data = buf
 
 	var timeout = time.Second * 2
@@ -388,21 +385,21 @@ func (b *natsBroker) request(ctx context.Context, topic string, buf []byte, opts
 	return res, err
 }
 
-func (b *natsBroker) onClose(_ *natsGo.Conn) {
+func (b *natsBroker) onClose(_ *nats.Conn) {
 	b.closeCh <- nil
 }
 
-func (b *natsBroker) onAsyncError(_ *natsGo.Conn, _ *natsGo.Subscription, err error) {
-	if errors.Is(err, natsGo.ErrDrainTimeout) {
+func (b *natsBroker) onAsyncError(_ *nats.Conn, _ *nats.Subscription, err error) {
+	if errors.Is(err, nats.ErrDrainTimeout) {
 		b.closeCh <- err
 	}
 }
 
-func (b *natsBroker) onDisconnectedError(_ *natsGo.Conn, err error) {
+func (b *natsBroker) onDisconnectedError(_ *nats.Conn, err error) {
 	b.closeCh <- err
 }
 
-func (b *natsBroker) startProducerSpan(ctx context.Context, msg *natsGo.Msg) trace.Span {
+func (b *natsBroker) startProducerSpan(ctx context.Context, msg *nats.Msg) trace.Span {
 	if b.producerTracer == nil {
 		return nil
 	}
@@ -410,9 +407,9 @@ func (b *natsBroker) startProducerSpan(ctx context.Context, msg *natsGo.Msg) tra
 	carrier := NewMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("nats"),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(msg.Subject),
+		semconv.MessagingSystemKey.String("nats"),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(msg.Subject),
 	}
 
 	var span trace.Span
@@ -429,7 +426,7 @@ func (b *natsBroker) finishProducerSpan(span trace.Span, err error) {
 	b.producerTracer.End(context.Background(), span, err)
 }
 
-func (b *natsBroker) startConsumerSpan(ctx context.Context, msg *natsGo.Msg) (context.Context, trace.Span) {
+func (b *natsBroker) startConsumerSpan(ctx context.Context, msg *nats.Msg) (context.Context, trace.Span) {
 	if b.consumerTracer == nil {
 		return ctx, nil
 	}
@@ -437,10 +434,10 @@ func (b *natsBroker) startConsumerSpan(ctx context.Context, msg *natsGo.Msg) (co
 	carrier := NewMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("nats"),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(msg.Subject),
-		semConv.MessagingOperationReceive,
+		semconv.MessagingSystemKey.String("nats"),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(msg.Subject),
+		semconv.MessagingOperationReceive,
 	}
 
 	var span trace.Span

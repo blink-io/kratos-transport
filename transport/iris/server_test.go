@@ -7,15 +7,12 @@ import (
 	"strconv"
 	"testing"
 
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/go-kratos/kratos/v2/transport/http/binding"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
-
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/go-kratos/kratos/v2/transport/http/binding"
-
 	"github.com/stretchr/testify/assert"
-
 	api "github.com/tx7do/kratos-transport/testing/api/protobuf"
 )
 

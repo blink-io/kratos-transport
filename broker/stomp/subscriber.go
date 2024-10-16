@@ -3,7 +3,7 @@ package stomp
 import (
 	"sync"
 
-	stompV3 "github.com/go-stomp/stomp/v3"
+	"github.com/go-stomp/stomp/v3"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
@@ -14,7 +14,7 @@ type subscriber struct {
 
 	options broker.SubscribeOptions
 	topic   string
-	sub     *stompV3.Subscription
+	sub     *stomp.Subscription
 	closed  bool
 }
 

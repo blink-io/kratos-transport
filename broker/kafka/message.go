@@ -1,17 +1,17 @@
 package kafka
 
 import (
-	kafkaGo "github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/propagation"
 )
 
 var _ propagation.TextMapCarrier = (*MessageCarrier)(nil)
 
 type MessageCarrier struct {
-	msg *kafkaGo.Message
+	msg *kafkago.Message
 }
 
-func NewMessageCarrier(msg *kafkaGo.Message) MessageCarrier {
+func NewMessageCarrier(msg *kafkago.Message) MessageCarrier {
 	return MessageCarrier{msg: msg}
 }
 
@@ -31,7 +31,7 @@ func (c MessageCarrier) Set(key, val string) {
 			i--
 		}
 	}
-	c.msg.Headers = append(c.msg.Headers, kafkaGo.Header{
+	c.msg.Headers = append(c.msg.Headers, kafkago.Header{
 		Key:   key,
 		Value: []byte(val),
 	})

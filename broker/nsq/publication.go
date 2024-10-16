@@ -3,14 +3,14 @@ package nsq
 import (
 	"errors"
 
-	NSQ "github.com/nsqio/go-nsq"
+	"github.com/nsqio/go-nsq"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
 type publication struct {
 	topic   string
 	msg     *broker.Message
-	nsqMsg  *NSQ.Message
+	nsqMsg  *nsq.Message
 	options broker.PublishOptions
 	err     error
 }

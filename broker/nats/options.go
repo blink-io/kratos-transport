@@ -3,14 +3,14 @@ package nats
 import (
 	"time"
 
-	natsGo "github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
 type optionsKey struct{}
 type drainConnectionKey struct{}
 
-func Options(opts natsGo.Options) broker.Option {
+func Options(opts nats.Options) broker.Option {
 	return broker.OptionContextWithValue(optionsKey{}, opts)
 }
 

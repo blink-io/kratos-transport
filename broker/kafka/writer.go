@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	kafkaGo "github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
 )
 
@@ -15,7 +15,7 @@ type WriterConfig struct {
 	// The balancer used to distribute messages across partitions.
 	//
 	// The default is to use a round-robin distribution.
-	Balancer kafkaGo.Balancer
+	Balancer kafkago.Balancer
 
 	// Limit on how many attempts will be made to deliver a message.
 	//
@@ -58,7 +58,7 @@ type WriterConfig struct {
 	// This version of kafka-go (v0.3) does not support 0 required acks, due to
 	// some internal complexity implementing this with the Kafka protocol. If you
 	// need that functionality specifically, you'll need to upgrade to v0.4.
-	RequiredAcks kafkaGo.RequiredAcks
+	RequiredAcks kafkago.RequiredAcks
 
 	// Setting this flag to true causes the WriteMessages method to never block.
 	// It also means that errors are ignored since the caller will not receive
@@ -68,27 +68,27 @@ type WriterConfig struct {
 
 	// If not nil, specifies a logger used to report internal changes within the
 	// Writer.
-	Logger kafkaGo.Logger
+	Logger kafkago.Logger
 
 	// ErrorLogger is the logger used to report errors. If nil, the Writer falls
 	// back to using Logger instead.
-	ErrorLogger kafkaGo.Logger
+	ErrorLogger kafkago.Logger
 
 	// AllowAutoTopicCreation notifies Writer to create topic if missing.
 	AllowAutoTopicCreation bool
 
-	Completion func(messages []kafkaGo.Message, err error)
+	Completion func(messages []kafkago.Message, err error)
 }
 
 type Writer struct {
-	Writer                  *kafkaGo.Writer
-	Writers                 map[string]*kafkaGo.Writer
+	Writer                  *kafkago.Writer
+	Writers                 map[string]*kafkago.Writer
 	EnableOneTopicOneWriter bool
 }
 
 func NewWriter(enableOneTopicOneWriter bool) *Writer {
 	return &Writer{
-		Writers:                 make(map[string]*kafkaGo.Writer),
+		Writers:                 make(map[string]*kafkago.Writer),
 		EnableOneTopicOneWriter: enableOneTopicOneWriter,
 	}
 }
@@ -105,16 +105,16 @@ func (w *Writer) Close() {
 }
 
 // CreateProducer create kafka-go Writer
-func (w *Writer) CreateProducer(writerConfig WriterConfig, saslMechanism sasl.Mechanism, tlsConfig *tls.Config) *kafkaGo.Writer {
-	sharedTransport := &kafkaGo.Transport{
+func (w *Writer) CreateProducer(writerConfig WriterConfig, saslMechanism sasl.Mechanism, tlsConfig *tls.Config) *kafkago.Writer {
+	sharedTransport := &kafkago.Transport{
 		SASL: saslMechanism,
 		TLS:  tlsConfig,
 	}
 
-	writer := &kafkaGo.Writer{
+	writer := &kafkago.Writer{
 		Transport: sharedTransport,
 
-		Addr:                   kafkaGo.TCP(writerConfig.Brokers...),
+		Addr:                   kafkago.TCP(writerConfig.Brokers...),
 		Balancer:               writerConfig.Balancer,
 		MaxAttempts:            writerConfig.MaxAttempts,
 		BatchSize:              writerConfig.BatchSize,

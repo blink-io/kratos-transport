@@ -6,11 +6,11 @@ import (
 	"strconv"
 
 	"github.com/go-kratos/kratos/v2/log"
-	kafkaGo "github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 )
 
-func createConnection(addr string) (*kafkaGo.Conn, func()) {
-	conn, err := kafkaGo.Dial("tcp", addr)
+func createConnection(addr string) (*kafkago.Conn, func()) {
+	conn, err := kafkago.Dial("tcp", addr)
 	if err != nil {
 		log.Errorf("create kafka connection failed: %s", err.Error())
 		return nil, nil
@@ -21,7 +21,7 @@ func createConnection(addr string) (*kafkaGo.Conn, func()) {
 		log.Errorf("create kafka controller failed: %s", err.Error())
 	}
 
-	controllerConn, err := kafkaGo.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	controllerConn, err := kafkago.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -43,12 +43,12 @@ func CreateTopic(addr string, topic string, numPartitions, replicationFactor int
 	}
 	defer cleanFunc()
 
-	err := conn.CreateTopics(kafkaGo.TopicConfig{
+	err := conn.CreateTopics(kafkago.TopicConfig{
 		Topic:             topic,
 		NumPartitions:     numPartitions,
 		ReplicationFactor: replicationFactor,
 	})
-	if err != nil && errors.Is(err, kafkaGo.TopicAlreadyExists) {
+	if err != nil && errors.Is(err, kafkago.TopicAlreadyExists) {
 		return nil
 	}
 

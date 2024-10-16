@@ -4,10 +4,9 @@ import (
 	"hash"
 	"time"
 
-	kafkaGo "github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain"
 	"github.com/segmentio/kafka-go/sasl/scram"
-
 	"github.com/tx7do/kratos-transport/broker"
 )
 
@@ -68,7 +67,7 @@ type allowPublishAutoTopicCreationKey struct{}
 type completionKey struct{}
 
 // WithReaderConfig .
-func WithReaderConfig(cfg kafkaGo.ReaderConfig) broker.Option {
+func WithReaderConfig(cfg kafkago.ReaderConfig) broker.Option {
 	return broker.OptionContextWithValue(readerConfigKey{}, cfg)
 }
 
@@ -78,7 +77,7 @@ func WithWriterConfig(cfg WriterConfig) broker.Option {
 }
 
 // WithDialer .
-func WithDialer(cfg *kafkaGo.Dialer) broker.Option {
+func WithDialer(cfg *kafkago.Dialer) broker.Option {
 	return broker.OptionContextWithValue(dialerConfigKey{}, cfg)
 }
 
@@ -195,12 +194,12 @@ func WithMaxAttempts(cnt int) broker.Option {
 }
 
 // WithLogger inject info logger
-func WithLogger(l kafkaGo.Logger) broker.Option {
+func WithLogger(l kafkago.Logger) broker.Option {
 	return broker.OptionContextWithValue(loggerKey{}, l)
 }
 
 // WithErrorLogger inject error logger
-func WithErrorLogger(l kafkaGo.Logger) broker.Option {
+func WithErrorLogger(l kafkago.Logger) broker.Option {
 	return broker.OptionContextWithValue(errorLoggerKey{}, l)
 }
 
@@ -261,7 +260,7 @@ func WithAllowPublishAutoTopicCreation(enable bool) broker.Option {
 }
 
 // WithCompletion 消息发布完成回调
-func WithCompletion(completion func(messages []kafkaGo.Message, err error)) broker.Option {
+func WithCompletion(completion func(messages []kafkago.Message, err error)) broker.Option {
 	return broker.OptionContextWithValue(completionKey{}, completion)
 }
 

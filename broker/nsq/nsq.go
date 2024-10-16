@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
-	NSQ "github.com/nsqio/go-nsq"
+	"github.com/nsqio/go-nsq"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
@@ -28,11 +28,11 @@ type nsqBroker struct {
 	addrs       []string
 
 	options broker.Options
-	config  *NSQ.Config
+	config  *nsq.Config
 
 	running bool
 
-	producers []*NSQ.Producer
+	producers []*nsq.Producer
 
 	subscribers *broker.SubscriberSyncMap
 }
@@ -42,9 +42,9 @@ func NewBroker(opts ...broker.Option) broker.Broker {
 
 	b := &nsqBroker{
 		options: options,
-		config:  NSQ.NewConfig(),
+		config:  nsq.NewConfig(),
 
-		producers: make([]*NSQ.Producer, 0),
+		producers: make([]*nsq.Producer, 0),
 
 		subscribers: broker.NewSubscriberSyncMap(),
 	}
@@ -53,7 +53,7 @@ func NewBroker(opts ...broker.Option) broker.Broker {
 }
 
 func (b *nsqBroker) Name() string {
-	return "NSQ"
+	return "nsq"
 }
 
 func (b *nsqBroker) Options() broker.Options {
@@ -97,7 +97,7 @@ func (b *nsqBroker) configure(ctx context.Context) {
 	}
 
 	if v, ok := ctx.Value(consumerOptsKey{}).([]string); ok {
-		cfgFlag := &NSQ.ConfigFlag{Config: b.config}
+		cfgFlag := &nsq.ConfigFlag{Config: b.config}
 		for _, opt := range v {
 			_ = cfgFlag.Set(opt)
 		}
@@ -112,9 +112,9 @@ func (b *nsqBroker) Connect() error {
 		return nil
 	}
 
-	producers := make([]*NSQ.Producer, 0, len(b.addrs))
+	producers := make([]*nsq.Producer, 0, len(b.addrs))
 	for _, addr := range b.addrs {
-		p, err := NSQ.NewProducer(addr, b.config)
+		p, err := nsq.NewProducer(addr, b.config)
 		if err != nil {
 			return err
 		}
@@ -134,8 +134,8 @@ func (b *nsqBroker) Connect() error {
 			channel = uuid.New().String() + "#ephemeral"
 		}
 
-		var cm *NSQ.Consumer
-		if cm, err = NSQ.NewConsumer(c.topic, channel, b.config); err != nil {
+		var cm *nsq.Consumer
+		if cm, err = nsq.NewConsumer(c.topic, channel, b.config); err != nil {
 			return
 		}
 
@@ -207,7 +207,7 @@ func (b *nsqBroker) Publish(ctx context.Context, topic string, msg broker.Any, o
 	return b.publish(ctx, topic, buf, opts...)
 }
 
-func (b *nsqBroker) getProducer() *NSQ.Producer {
+func (b *nsqBroker) getProducer() *nsq.Producer {
 	producerLen := len(b.producers)
 	if producerLen == 0 {
 		return nil
@@ -224,11 +224,11 @@ func (b *nsqBroker) publish(ctx context.Context, topic string, msg []byte, opts 
 	}
 
 	var (
-		doneChan chan *NSQ.ProducerTransaction
+		doneChan chan *nsq.ProducerTransaction
 		delay    time.Duration
 	)
 	if options.Context != nil {
-		if v, ok := options.Context.Value(asyncPublishKey{}).(chan *NSQ.ProducerTransaction); ok {
+		if v, ok := options.Context.Value(asyncPublishKey{}).(chan *nsq.ProducerTransaction); ok {
 			doneChan = v
 		}
 		if v, ok := options.Context.Value(deferredPublishKey{}).(time.Duration); ok {
@@ -281,12 +281,12 @@ func (b *nsqBroker) Subscribe(topic string, handler broker.Handler, binder broke
 		channel = uuid.New().String() + "#ephemeral"
 	}
 
-	c, err := NSQ.NewConsumer(topic, channel, &config)
+	c, err := nsq.NewConsumer(topic, channel, &config)
 	if err != nil {
 		return nil, err
 	}
 
-	h := NSQ.HandlerFunc(func(nm *NSQ.Message) error {
+	h := nsq.HandlerFunc(func(nm *nsq.Message) error {
 		if !options.AutoAck {
 			nm.DisableAutoResponse()
 		}

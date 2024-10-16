@@ -10,17 +10,13 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/producer"
 	"github.com/apache/rocketmq-client-go/v2/rlog"
-
-	"go.opentelemetry.io/otel/attribute"
-	semConv "go.opentelemetry.io/otel/semconv/v1.12.0"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/go-kratos/kratos/v2/log"
-
-	"github.com/tx7do/kratos-transport/tracing"
-
 	"github.com/tx7do/kratos-transport/broker"
 	rocketmqOption "github.com/tx7do/kratos-transport/broker/rocketmq/option"
+	"github.com/tx7do/kratos-transport/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type rocketmqBroker struct {
@@ -487,15 +483,15 @@ func (r *rocketmqBroker) startProducerSpan(ctx context.Context, msg *primitive.M
 	carrier := NewProducerMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String(rocketmqOption.SPAN_ATTRIBUTE_VALUE_ROCKETMQ_MESSAGING_SYSTEM),
-		semConv.MessagingRocketmqNamespaceKey.String(r.namespace),
-		semConv.MessagingRocketmqClientGroupKey.String(r.groupName),
-		semConv.MessagingRocketmqClientIDKey.String(r.instanceName),
-		semConv.MessagingDestinationKindTopic,
+		semconv.MessagingSystemKey.String(rocketmqOption.SPAN_ATTRIBUTE_VALUE_ROCKETMQ_MESSAGING_SYSTEM),
+		semconv.MessagingRocketmqNamespaceKey.String(r.namespace),
+		semconv.MessagingRocketmqClientGroupKey.String(r.groupName),
+		semconv.MessagingRocketmqClientIDKey.String(r.instanceName),
+		semconv.MessagingDestinationKindTopic,
 
-		semConv.MessagingDestinationKey.String(msg.Topic),
-		semConv.MessagingRocketmqMessageTagKey.String(msg.GetTags()),
-		semConv.MessagingRocketmqMessageKeysKey.String(msg.GetKeys()),
+		semconv.MessagingDestinationKey.String(msg.Topic),
+		semconv.MessagingRocketmqMessageTagKey.String(msg.GetTags()),
+		semconv.MessagingRocketmqMessageKeysKey.String(msg.GetKeys()),
 	}
 
 	var span trace.Span
@@ -510,9 +506,9 @@ func (r *rocketmqBroker) finishProducerSpan(span trace.Span, messageId string, e
 	}
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingMessageIDKey.String(messageId),
-		semConv.MessagingRocketmqNamespaceKey.String(r.namespace),
-		semConv.MessagingRocketmqClientGroupKey.String(r.groupName),
+		semconv.MessagingMessageIDKey.String(messageId),
+		semconv.MessagingRocketmqNamespaceKey.String(r.namespace),
+		semconv.MessagingRocketmqClientGroupKey.String(r.groupName),
 	}
 
 	r.producerTracer.End(context.Background(), span, err, attrs...)
@@ -526,11 +522,11 @@ func (r *rocketmqBroker) startConsumerSpan(ctx context.Context, msg *primitive.M
 	carrier := NewConsumerMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String(rocketmqOption.SPAN_ATTRIBUTE_VALUE_ROCKETMQ_MESSAGING_SYSTEM),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(msg.Topic),
-		semConv.MessagingOperationReceive,
-		semConv.MessagingMessageIDKey.String(msg.MsgId),
+		semconv.MessagingSystemKey.String(rocketmqOption.SPAN_ATTRIBUTE_VALUE_ROCKETMQ_MESSAGING_SYSTEM),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(msg.Topic),
+		semconv.MessagingOperationReceive,
+		semconv.MessagingMessageIDKey.String(msg.MsgId),
 	}
 
 	var span trace.Span

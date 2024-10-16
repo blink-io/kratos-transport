@@ -3,7 +3,7 @@ package stomp
 import (
 	"regexp"
 
-	frameV3 "github.com/go-stomp/stomp/v3/frame"
+	"github.com/go-stomp/stomp/v3/frame"
 )
 
 var re = regexp.MustCompile("^stomp(\\+ssl)?://.*")
@@ -27,7 +27,7 @@ func refitUrl(url string, enableTLS bool) string {
 	return url
 }
 
-func stompHeaderToMap(h *frameV3.Header) map[string]string {
+func stompHeaderToMap(h *frame.Header) map[string]string {
 	m := map[string]string{}
 	for i := 0; i < h.Len(); i++ {
 		k, v := h.GetAt(i)

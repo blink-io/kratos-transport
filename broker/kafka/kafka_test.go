@@ -12,13 +12,11 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
-	kafkaGo "github.com/segmentio/kafka-go"
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
-
 	"github.com/tx7do/kratos-transport/broker"
-	"github.com/tx7do/kratos-transport/tracing"
-
 	api "github.com/tx7do/kratos-transport/testing/api/manual"
+	"github.com/tx7do/kratos-transport/tracing"
 )
 
 const (
@@ -270,7 +268,7 @@ func Test_Publish_WithCompletion(t *testing.T) {
 		broker.WithCodec("json"),
 		createTracerProvider("otlp-grpc", "subscribe_tracer_tester"),
 		WithAsync(true),
-		WithCompletion(func(messages []kafkaGo.Message, err error) {
+		WithCompletion(func(messages []kafkago.Message, err error) {
 			t.Logf("send message complete: %v", err)
 		}),
 	)

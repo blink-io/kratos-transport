@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func setAddrs(addrs []string) []string {
@@ -86,7 +86,7 @@ func generateClientId() string {
 	return fmt.Sprintf("%d%d", time.Now().UnixNano(), rand.Intn(10))
 }
 
-func checkClientToken(token MQTT.Token) (bool, error) {
+func checkClientToken(token mqtt.Token) (bool, error) {
 	if token.Wait() && token.Error() != nil {
 		return false, token.Error()
 	}

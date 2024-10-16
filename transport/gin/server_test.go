@@ -9,9 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	kHttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
-
 	"github.com/stretchr/testify/assert"
-
 	api "github.com/tx7do/kratos-transport/testing/api/protobuf"
 )
 

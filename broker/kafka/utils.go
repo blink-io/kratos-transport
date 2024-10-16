@@ -1,12 +1,11 @@
 package kafka
 
 import (
-	kafkaGo "github.com/segmentio/kafka-go"
-
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
-func kafkaHeaderToMap(h []kafkaGo.Header) broker.Headers {
+func kafkaHeaderToMap(h []kafkago.Header) broker.Headers {
 	m := broker.Headers{}
 	for _, v := range h {
 		m[v.Key] = string(v.Value)

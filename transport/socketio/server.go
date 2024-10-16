@@ -11,25 +11,23 @@ import (
 
 	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/go-kratos/kratos/v2/log"
-	kratosTransport "github.com/go-kratos/kratos/v2/transport"
-
-	socketIo "github.com/googollee/go-socket.io"
+	ktransport "github.com/go-kratos/kratos/v2/transport"
+	socketio "github.com/googollee/go-socket.io"
 	"github.com/googollee/go-socket.io/engineio"
 	"github.com/googollee/go-socket.io/engineio/transport"
 	"github.com/googollee/go-socket.io/engineio/transport/polling"
 	"github.com/googollee/go-socket.io/engineio/transport/websocket"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 var (
-	_ kratosTransport.Server     = (*Server)(nil)
-	_ kratosTransport.Endpointer = (*Server)(nil)
+	_ ktransport.Server     = (*Server)(nil)
+	_ ktransport.Endpointer = (*Server)(nil)
 )
 
 type Server struct {
-	*socketIo.Server
+	*socketio.Server
 
 	lis     net.Listener
 	tlsConf *tls.Config
@@ -116,15 +114,15 @@ func (s *Server) Endpoint() (*url.URL, error) {
 	return endpoint, nil
 }
 
-func (s *Server) RegisterConnectHandler(namespace string, f func(socketIo.Conn) error) {
+func (s *Server) RegisterConnectHandler(namespace string, f func(socketio.Conn) error) {
 	s.Server.OnConnect(namespace, f)
 }
 
-func (s *Server) RegisterDisconnectHandler(namespace string, f func(socketIo.Conn, string)) {
+func (s *Server) RegisterDisconnectHandler(namespace string, f func(socketio.Conn, string)) {
 	s.Server.OnDisconnect(namespace, f)
 }
 
-func (s *Server) RegisterErrorHandler(namespace string, f func(socketIo.Conn, error)) {
+func (s *Server) RegisterErrorHandler(namespace string, f func(socketio.Conn, error)) {
 	s.Server.OnError(namespace, f)
 }
 
@@ -133,7 +131,7 @@ func (s *Server) RegisterEventHandler(namespace, event string, f interface{}) {
 }
 
 func (s *Server) init(opts ...ServerOption) {
-	server := socketIo.NewServer(&engineio.Options{
+	server := socketio.NewServer(&engineio.Options{
 		Transports: []transport.Transport{
 			&polling.Transport{
 				CheckOrigin: func(r *http.Request) bool { return true },

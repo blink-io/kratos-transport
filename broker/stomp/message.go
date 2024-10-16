@@ -1,9 +1,8 @@
 package stomp
 
 import (
-	stompV3 "github.com/go-stomp/stomp/v3"
-	frameV3 "github.com/go-stomp/stomp/v3/frame"
-
+	"github.com/go-stomp/stomp/v3"
+	"github.com/go-stomp/stomp/v3/frame"
 	"go.opentelemetry.io/otel/propagation"
 )
 
@@ -11,10 +10,10 @@ var _ propagation.TextMapCarrier = (*ProducerMessageCarrier)(nil)
 var _ propagation.TextMapCarrier = (*ConsumerMessageCarrier)(nil)
 
 type ProducerMessageCarrier struct {
-	msg *[]func(*frameV3.Frame) error
+	msg *[]func(*frame.Frame) error
 }
 
-func NewProducerMessageCarrier(msg *[]func(*frameV3.Frame) error) ProducerMessageCarrier {
+func NewProducerMessageCarrier(msg *[]func(*frame.Frame) error) ProducerMessageCarrier {
 	return ProducerMessageCarrier{msg: msg}
 }
 
@@ -25,7 +24,7 @@ func (c ProducerMessageCarrier) Get(key string) string {
 
 func (c ProducerMessageCarrier) Set(key, val string) {
 	//fmt.Println("ProducerMessageCarrier.Set", key, val)
-	*c.msg = append(*c.msg, stompV3.SendOpt.Header(key, val))
+	*c.msg = append(*c.msg, stomp.SendOpt.Header(key, val))
 }
 
 func (c ProducerMessageCarrier) Keys() []string {
@@ -34,10 +33,10 @@ func (c ProducerMessageCarrier) Keys() []string {
 }
 
 type ConsumerMessageCarrier struct {
-	msg *stompV3.Message
+	msg *stomp.Message
 }
 
-func NewConsumerMessageCarrier(msg *stompV3.Message) ConsumerMessageCarrier {
+func NewConsumerMessageCarrier(msg *stomp.Message) ConsumerMessageCarrier {
 	return ConsumerMessageCarrier{msg: msg}
 }
 
@@ -50,7 +49,7 @@ func (c ConsumerMessageCarrier) Get(key string) string {
 
 func (c ConsumerMessageCarrier) Set(key, val string) {
 	if c.msg.Header == nil {
-		c.msg.Header = frameV3.NewHeader()
+		c.msg.Header = frame.NewHeader()
 	}
 	c.msg.Header.Set(key, val)
 }

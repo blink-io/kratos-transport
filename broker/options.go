@@ -4,9 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 
-	"github.com/tx7do/kratos-transport/tracing"
-
 	"github.com/go-kratos/kratos/v2/encoding"
+	"github.com/tx7do/kratos-transport/tracing"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )

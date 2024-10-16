@@ -12,10 +12,8 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
-	natsGo "github.com/nats-io/nats.go"
-
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
-
 	"github.com/tx7do/kratos-transport/broker"
 	api "github.com/tx7do/kratos-transport/testing/api/manual"
 	"github.com/tx7do/kratos-transport/tracing"
@@ -79,7 +77,7 @@ func TestInitAddrs(t *testing.T) {
 				// we know that there are just two addrs in the dict
 				_ = br.Init(broker.WithAddress(addrs[0], addrs[1]))
 			case "natsOpts":
-				nopts := natsGo.GetDefaultOptions()
+				nopts := nats.GetDefaultOptions()
 				nopts.Servers = addrs
 				br = NewBroker(Options(nopts))
 				_ = br.Init()
@@ -124,7 +122,7 @@ func RegisterHygrothermographResponseJsonHandler(fnc api.HygrothermographRespons
 				return err
 			}
 			rawMsg, _ := json.Marshal(res)
-			_ = event.Message().Msg.(*natsGo.Msg).Respond(rawMsg)
+			_ = event.Message().Msg.(*nats.Msg).Respond(rawMsg)
 		default:
 			return fmt.Errorf("unsupported type: %T", t)
 		}
@@ -376,7 +374,7 @@ func Test_Request_WithTracer(t *testing.T) {
 
 		elapsedTime := time.Since(startTime) / time.Millisecond
 
-		natsMsg := reply.(*natsGo.Msg)
+		natsMsg := reply.(*nats.Msg)
 		res := api.Hygrothermograph{}
 		err = json.Unmarshal(natsMsg.Data, &res)
 		assert.Nil(t, err)

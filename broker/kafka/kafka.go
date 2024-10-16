@@ -10,19 +10,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
-
-	"go.opentelemetry.io/otel/attribute"
-	semConv "go.opentelemetry.io/otel/semconv/v1.12.0"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/go-kratos/kratos/v2/log"
-
-	kafkaGo "github.com/segmentio/kafka-go"
+	"github.com/google/uuid"
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
-
 	"github.com/tx7do/kratos-transport/broker"
 	"github.com/tx7do/kratos-transport/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -32,7 +28,7 @@ const (
 type kafkaBroker struct {
 	sync.RWMutex
 
-	readerConfig  kafkaGo.ReaderConfig
+	readerConfig  kafkago.ReaderConfig
 	writerConfig  WriterConfig
 	saslMechanism sasl.Mechanism
 
@@ -52,14 +48,14 @@ func NewBroker(opts ...broker.Option) broker.Broker {
 	options := broker.NewOptionsAndApply(opts...)
 
 	b := &kafkaBroker{
-		readerConfig: kafkaGo.ReaderConfig{
+		readerConfig: kafkago.ReaderConfig{
 			WatchPartitionChanges: true,
 			MaxWait:               500 * time.Millisecond,
 			Logger:                nil,
 			ErrorLogger:           ErrorLogger{},
 		},
 		writerConfig: WriterConfig{
-			Balancer:     &kafkaGo.LeastBytes{},
+			Balancer:     &kafkago.LeastBytes{},
 			Logger:       nil,
 			ErrorLogger:  ErrorLogger{},
 			BatchTimeout: 10 * time.Millisecond, // 内部默认为1秒，那么会造成什么情况呢？同步发送的时候，发送一次要等待1秒的时间。
@@ -115,12 +111,12 @@ func (b *kafkaBroker) Init(opts ...broker.Option) error {
 	}
 	b.writer = NewWriter(enableOneTopicOneWriter)
 
-	if value, ok := b.options.Context.Value(completionKey{}).(func(messages []kafkaGo.Message, err error)); ok {
+	if value, ok := b.options.Context.Value(completionKey{}).(func(messages []kafkago.Message, err error)); ok {
 		b.writerConfig.Completion = value
 	}
 
 	if b.readerConfig.Dialer == nil {
-		b.readerConfig.Dialer = kafkaGo.DefaultDialer
+		b.readerConfig.Dialer = kafkago.DefaultDialer
 	}
 
 	if value, ok := b.options.Context.Value(queueCapacityKey{}).(int); ok {
@@ -169,7 +165,7 @@ func (b *kafkaBroker) Init(opts ...broker.Option) error {
 		b.saslMechanism = value
 
 		if b.readerConfig.Dialer == nil {
-			dialer := &kafkaGo.Dialer{
+			dialer := &kafkago.Dialer{
 				Timeout:       10 * time.Second,
 				DualStack:     true,
 				SASLMechanism: b.saslMechanism,
@@ -179,10 +175,10 @@ func (b *kafkaBroker) Init(opts ...broker.Option) error {
 			b.readerConfig.Dialer.SASLMechanism = b.saslMechanism
 		}
 	}
-	if value, ok := b.options.Context.Value(readerConfigKey{}).(kafkaGo.ReaderConfig); ok {
+	if value, ok := b.options.Context.Value(readerConfigKey{}).(kafkago.ReaderConfig); ok {
 		b.readerConfig = value
 	}
-	if value, ok := b.options.Context.Value(dialerConfigKey{}).(*kafkaGo.Dialer); ok {
+	if value, ok := b.options.Context.Value(dialerConfigKey{}).(*kafkago.Dialer); ok {
 		b.readerConfig.Dialer = value
 	}
 	if value, ok := b.options.Context.Value(dialerTimeoutKey{}).(time.Duration); ok {
@@ -193,7 +189,7 @@ func (b *kafkaBroker) Init(opts ...broker.Option) error {
 
 	if b.options.Secure && b.options.TLSConfig != nil {
 		if b.readerConfig.Dialer == nil {
-			dialer := &kafkaGo.Dialer{
+			dialer := &kafkago.Dialer{
 				Timeout:   10 * time.Second,
 				DualStack: true,
 			}
@@ -211,11 +207,11 @@ func (b *kafkaBroker) Init(opts ...broker.Option) error {
 		b.consumerTracer = tracing.NewTracer(trace.SpanKindConsumer, "kafka-consumer", b.options.Tracings...)
 	}
 
-	if value, ok := b.options.Context.Value(loggerKey{}).(kafkaGo.Logger); ok {
+	if value, ok := b.options.Context.Value(loggerKey{}).(kafkago.Logger); ok {
 		b.readerConfig.Logger = value
 		b.writerConfig.Logger = value
 	}
-	if value, ok := b.options.Context.Value(errorLoggerKey{}).(kafkaGo.Logger); ok {
+	if value, ok := b.options.Context.Value(errorLoggerKey{}).(kafkago.Logger); ok {
 		b.readerConfig.ErrorLogger = value
 		b.writerConfig.ErrorLogger = value
 	}
@@ -243,22 +239,22 @@ func (b *kafkaBroker) Init(opts ...broker.Option) error {
 	//	switch value {
 	//	default:
 	//	case LeastBytesBalancer:
-	//		b.writerConfig.BalancerName = &kafkaGo.LeastBytes{}
+	//		b.writerConfig.BalancerName = &kafkago.LeastBytes{}
 	//		break
 	//	case RoundRobinBalancer:
-	//		b.writerConfig.BalancerName = &kafkaGo.RoundRobin{}
+	//		b.writerConfig.BalancerName = &kafkago.RoundRobin{}
 	//		break
 	//	case HashBalancer:
-	//		b.writerConfig.BalancerName = &kafkaGo.Hash{}
+	//		b.writerConfig.BalancerName = &kafkago.Hash{}
 	//		break
 	//	case ReferenceHashBalancer:
-	//		b.writerConfig.BalancerName = &kafkaGo.ReferenceHash{}
+	//		b.writerConfig.BalancerName = &kafkago.ReferenceHash{}
 	//		break
 	//	case Crc32Balancer:
-	//		b.writerConfig.BalancerName = &kafkaGo.CRC32Balancer{}
+	//		b.writerConfig.BalancerName = &kafkago.CRC32Balancer{}
 	//		break
 	//	case Murmur2Balancer:
-	//		b.writerConfig.BalancerName = &kafkaGo.Murmur2Balancer{}
+	//		b.writerConfig.BalancerName = &kafkago.Murmur2Balancer{}
 	//		break
 	//	}
 	//}
@@ -342,34 +338,34 @@ func (b *kafkaBroker) Disconnect() error {
 	return nil
 }
 
-func (b *kafkaBroker) initPublishOption(writer *kafkaGo.Writer, options broker.PublishOptions) {
+func (b *kafkaBroker) initPublishOption(writer *kafkago.Writer, options broker.PublishOptions) {
 	//writer.BalancerName = b.writerConfig.BalancerName
 	if value, ok := options.Context.Value(balancerKey{}).(*balancerValue); ok {
 		switch value.Name {
 		default:
 		case LeastBytesBalancer:
-			writer.Balancer = &kafkaGo.LeastBytes{}
+			writer.Balancer = &kafkago.LeastBytes{}
 			break
 		case RoundRobinBalancer:
-			writer.Balancer = &kafkaGo.RoundRobin{}
+			writer.Balancer = &kafkago.RoundRobin{}
 			break
 		case HashBalancer:
-			writer.Balancer = &kafkaGo.Hash{
+			writer.Balancer = &kafkago.Hash{
 				Hasher: value.Hasher,
 			}
 			break
 		case ReferenceHashBalancer:
-			writer.Balancer = &kafkaGo.ReferenceHash{
+			writer.Balancer = &kafkago.ReferenceHash{
 				Hasher: value.Hasher,
 			}
 			break
 		case Crc32Balancer:
-			writer.Balancer = &kafkaGo.CRC32Balancer{
+			writer.Balancer = &kafkago.CRC32Balancer{
 				Consistent: value.Consistent,
 			}
 			break
 		case Murmur2Balancer:
-			writer.Balancer = &kafkaGo.Murmur2Balancer{
+			writer.Balancer = &kafkago.Murmur2Balancer{
 				Consistent: value.Consistent,
 			}
 			break
@@ -402,14 +398,14 @@ func (b *kafkaBroker) publishMultipleWriter(ctx context.Context, topic string, b
 		o(&options)
 	}
 
-	kMsg := kafkaGo.Message{
+	kMsg := kafkago.Message{
 		Topic: topic,
 		Value: buf,
 	}
 
 	if headers, ok := options.Context.Value(messageHeadersKey{}).(map[string]interface{}); ok {
 		for k, v := range headers {
-			header := kafkaGo.Header{Key: k}
+			header := kafkago.Header{Key: k}
 			switch t := v.(type) {
 			case string:
 				header.Value = []byte(t)
@@ -457,7 +453,7 @@ func (b *kafkaBroker) publishMultipleWriter(ctx context.Context, topic string, b
 		log.Errorf("WriteMessages error: %s", err.Error())
 		switch cached {
 		case false:
-			var kerr kafkaGo.Error
+			var kerr kafkago.Error
 			if errors.As(err, &kerr) {
 				if kerr.Temporary() && !kerr.Timeout() {
 					time.Sleep(200 * time.Millisecond)
@@ -497,14 +493,14 @@ func (b *kafkaBroker) publishOneWriter(ctx context.Context, topic string, buf []
 		o(&options)
 	}
 
-	kMsg := kafkaGo.Message{
+	kMsg := kafkago.Message{
 		Topic: topic,
 		Value: buf,
 	}
 
 	if headers, ok := options.Context.Value(messageHeadersKey{}).(map[string]interface{}); ok {
 		for k, v := range headers {
-			header := kafkaGo.Header{Key: k}
+			header := kafkago.Header{Key: k}
 			switch t := v.(type) {
 			case string:
 				header.Value = []byte(t)
@@ -550,7 +546,7 @@ func (b *kafkaBroker) publishOneWriter(ctx context.Context, topic string, buf []
 		log.Errorf("WriteMessages error: %s", err.Error())
 		switch cached {
 		case false:
-			var kerr kafkaGo.Error
+			var kerr kafkago.Error
 			if errors.As(err, &kerr) {
 				if kerr.Temporary() && !kerr.Timeout() {
 					time.Sleep(200 * time.Millisecond)
@@ -606,7 +602,7 @@ func (b *kafkaBroker) Subscribe(topic string, handler broker.Handler, binder bro
 		options: options,
 		topic:   topic,
 		handler: handler,
-		reader:  kafkaGo.NewReader(readerConfig),
+		reader:  kafkago.NewReader(readerConfig),
 	}
 
 	go func() {
@@ -676,7 +672,7 @@ func (b *kafkaBroker) onMessage() {
 
 }
 
-func (b *kafkaBroker) startProducerSpan(ctx context.Context, msg *kafkaGo.Message) trace.Span {
+func (b *kafkaBroker) startProducerSpan(ctx context.Context, msg *kafkago.Message) trace.Span {
 	if b.producerTracer == nil {
 		return nil
 	}
@@ -684,9 +680,9 @@ func (b *kafkaBroker) startProducerSpan(ctx context.Context, msg *kafkaGo.Messag
 	carrier := NewMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("kafka"),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(msg.Topic),
+		semconv.MessagingSystemKey.String("kafka"),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(msg.Topic),
 	}
 
 	var span trace.Span
@@ -701,14 +697,14 @@ func (b *kafkaBroker) finishProducerSpan(span trace.Span, partition int32, offse
 	}
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingMessageIDKey.String(strconv.FormatInt(offset, 10)),
-		semConv.MessagingKafkaPartitionKey.Int64(int64(partition)),
+		semconv.MessagingMessageIDKey.String(strconv.FormatInt(offset, 10)),
+		semconv.MessagingKafkaPartitionKey.Int64(int64(partition)),
 	}
 
 	b.producerTracer.End(context.Background(), span, err, attrs...)
 }
 
-func (b *kafkaBroker) startConsumerSpan(ctx context.Context, msg *kafkaGo.Message) (context.Context, trace.Span) {
+func (b *kafkaBroker) startConsumerSpan(ctx context.Context, msg *kafkago.Message) (context.Context, trace.Span) {
 	if b.consumerTracer == nil {
 		return ctx, nil
 	}
@@ -716,12 +712,12 @@ func (b *kafkaBroker) startConsumerSpan(ctx context.Context, msg *kafkaGo.Messag
 	carrier := NewMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("kafka"),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(msg.Topic),
-		semConv.MessagingOperationReceive,
-		semConv.MessagingMessageIDKey.String(strconv.FormatInt(msg.Offset, 10)),
-		semConv.MessagingKafkaPartitionKey.Int64(int64(msg.Partition)),
+		semconv.MessagingSystemKey.String("kafka"),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(msg.Topic),
+		semconv.MessagingOperationReceive,
+		semconv.MessagingMessageIDKey.String(strconv.FormatInt(msg.Offset, 10)),
+		semconv.MessagingKafkaPartitionKey.Int64(int64(msg.Partition)),
 	}
 
 	var span trace.Span

@@ -10,9 +10,8 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/tx7do/kratos-transport/broker"
 	"github.com/tx7do/kratos-transport/tracing"
-
 	"go.opentelemetry.io/otel/attribute"
-	semConv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -310,12 +309,12 @@ func (b *rabbitBroker) startProducerSpan(ctx context.Context, routingKey string,
 	carrier := NewProducerMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("rabbitmq"),
-		semConv.MessagingDestinationKindTopic,
-		semConv.MessagingDestinationKey.String(routingKey),
-		semConv.MessagingMessageIDKey.String(msg.MessageId),
-		semConv.MessagingProtocolKey.String("AMQP"),
-		semConv.MessagingProtocolVersionKey.String("0.9.1"),
+		semconv.MessagingSystemKey.String("rabbitmq"),
+		semconv.MessagingDestinationKindTopic,
+		semconv.MessagingDestinationKey.String(routingKey),
+		semconv.MessagingMessageIDKey.String(msg.MessageId),
+		semconv.MessagingProtocolKey.String("AMQP"),
+		semconv.MessagingProtocolVersionKey.String("0.9.1"),
 	}
 
 	var span trace.Span
@@ -330,7 +329,7 @@ func (b *rabbitBroker) finishProducerSpan(span trace.Span, routingKey string, er
 	}
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingRabbitmqRoutingKeyKey.String(routingKey),
+		semconv.MessagingRabbitmqRoutingKeyKey.String(routingKey),
 	}
 
 	b.producerTracer.End(context.Background(), span, err, attrs...)
@@ -344,14 +343,14 @@ func (b *rabbitBroker) startConsumerSpan(ctx context.Context, queueName string, 
 	carrier := NewConsumerMessageCarrier(msg)
 
 	attrs := []attribute.KeyValue{
-		semConv.MessagingSystemKey.String("rabbitmq"),
-		semConv.MessagingDestinationKindQueue,
-		semConv.MessagingDestinationKey.String(queueName),
-		semConv.MessagingOperationReceive,
-		semConv.MessagingMessageIDKey.String(msg.MessageId),
-		semConv.MessagingRabbitmqRoutingKeyKey.String(msg.RoutingKey),
-		semConv.MessagingProtocolKey.String("AMQP"),
-		semConv.MessagingProtocolVersionKey.String("0.9.1"),
+		semconv.MessagingSystemKey.String("rabbitmq"),
+		semconv.MessagingDestinationKindQueue,
+		semconv.MessagingDestinationKey.String(queueName),
+		semconv.MessagingOperationReceive,
+		semconv.MessagingMessageIDKey.String(msg.MessageId),
+		semconv.MessagingRabbitmqRoutingKeyKey.String(msg.RoutingKey),
+		semconv.MessagingProtocolKey.String("AMQP"),
+		semconv.MessagingProtocolVersionKey.String("0.9.1"),
 	}
 
 	var span trace.Span

@@ -1,8 +1,10 @@
 package nats
 
-import natsGo "github.com/nats-io/nats.go"
+import (
+	"github.com/nats-io/nats.go"
+)
 
-func natsHeaderToMap(h natsGo.Header) map[string]string {
+func natsHeaderToMap(h nats.Header) map[string]string {
 	m := map[string]string{}
 
 	for k, v := range h {

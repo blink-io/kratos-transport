@@ -3,8 +3,7 @@ package kafka
 import (
 	"sync"
 
-	kafkaGo "github.com/segmentio/kafka-go"
-
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/tx7do/kratos-transport/broker"
 )
 
@@ -15,7 +14,7 @@ type subscriber struct {
 	topic   string
 	options broker.SubscribeOptions
 	handler broker.Handler
-	reader  *kafkaGo.Reader
+	reader  *kafkago.Reader
 	closed  bool
 	done    chan struct{}
 }
