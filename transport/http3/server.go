@@ -9,17 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tx7do/kratos-transport/transport/http3/matcher"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/quic-go/quic-go/http3"
-	"github.com/tx7do/kratos-transport/transport/http3/matcher"
-)
-
-const (
-	SupportPackageIsVersion1 = khttp.SupportPackageIsVersion1
 )
 
 var (
@@ -33,14 +29,14 @@ type Server struct {
 	endpoint   *url.URL
 	err        error
 	timeout    time.Duration
-	filters    []khttp.FilterFunc
+	filters    []FilterFunc
 	middleware matcher.Matcher
 	//ms          []middleware.Middleware
-	decVars     khttp.DecodeRequestFunc
-	decQuery    khttp.DecodeRequestFunc
-	decBody     khttp.DecodeRequestFunc
-	enc         khttp.EncodeResponseFunc
-	ene         khttp.EncodeErrorFunc
+	decVars     DecodeRequestFunc
+	decQuery    DecodeRequestFunc
+	decBody     DecodeRequestFunc
+	enc         EncodeResponseFunc
+	ene         EncodeErrorFunc
 	router      *mux.Router
 	strictSlash bool
 }
@@ -49,13 +45,13 @@ func NewServer(opts ...ServerOption) *Server {
 	srv := &Server{
 		timeout:     1 * time.Second,
 		middleware:  matcher.New(),
-		decVars:     khttp.DefaultRequestVars,
-		decQuery:    khttp.DefaultRequestQuery,
-		decBody:     khttp.DefaultRequestDecoder,
-		enc:         khttp.DefaultResponseEncoder,
-		ene:         khttp.DefaultErrorEncoder,
-		strictSlash: true,
+		decVars:     DefaultRequestVars,
+		decQuery:    DefaultRequestQuery,
+		decBody:     DefaultRequestDecoder,
+		enc:         DefaultResponseEncoder,
+		ene:         DefaultErrorEncoder,
 		router:      mux.NewRouter(),
+		strictSlash: true,
 	}
 
 	srv.init(opts...)
@@ -75,7 +71,7 @@ func (s *Server) init(opts ...ServerOption) {
 
 	s.router.StrictSlash(s.strictSlash)
 	s.Server.TLSConfig = s.tlsConf
-	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
+	s.Server.Handler = FilterChain(s.filters...)(s.router)
 
 	_, _ = s.Endpoint()
 }
@@ -127,7 +123,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.Close()
 }
 
-func (s *Server) Route(prefix string, filters ...khttp.FilterFunc) *Router {
+func (s *Server) Route(prefix string, filters ...FilterFunc) *Router {
 	return newRouter(prefix, s, filters...)
 }
 
@@ -187,7 +183,7 @@ func (s *Server) filter() mux.MiddlewareFunc {
 }
 
 // WalkRoute walks the router and all its sub-routers, calling walkFn for each route in the tree.
-func (s *Server) WalkRoute(fn khttp.WalkRouteFunc) error {
+func (s *Server) WalkRoute(fn WalkRouteFunc) error {
 	return s.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		methods, err := route.GetMethods()
 		if err != nil {
@@ -198,7 +194,7 @@ func (s *Server) WalkRoute(fn khttp.WalkRouteFunc) error {
 			return err
 		}
 		for _, method := range methods {
-			if err := fn(khttp.RouteInfo{Method: method, Path: path}); err != nil {
+			if err := fn(RouteInfo{Method: method, Path: path}); err != nil {
 				return err
 			}
 		}
@@ -208,7 +204,7 @@ func (s *Server) WalkRoute(fn khttp.WalkRouteFunc) error {
 
 // WalkHandle walks the router and all its sub-routers, calling walkFn for each route in the tree.
 func (s *Server) WalkHandle(handle func(method, path string, handler http.HandlerFunc)) error {
-	return s.WalkRoute(func(r khttp.RouteInfo) error {
+	return s.WalkRoute(func(r RouteInfo) error {
 		handle(r.Method, r.Path, s.ServeHTTP)
 		return nil
 	})

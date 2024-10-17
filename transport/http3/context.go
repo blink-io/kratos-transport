@@ -11,15 +11,11 @@ import (
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/go-kratos/kratos/v2/transport/http/binding"
 	"github.com/gorilla/mux"
 )
 
 var _ Context = (*wrapper)(nil)
-
-// Context is an HTTP Context.
-type Context = khttp.Context
 
 //type Context interface {
 //	context.Context
