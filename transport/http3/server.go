@@ -135,26 +135,32 @@ func (s *Server) Stop(ctx context.Context) error {
 	return err
 }
 
+// Route registers an HTTP router.
 func (s *Server) Route(prefix string, filters ...khttp.FilterFunc) *Router {
 	return newRouter(prefix, s, filters...)
 }
 
+// Handle registers a new route with a matcher for the URL path.
 func (s *Server) Handle(path string, h http.Handler) {
 	s.router.Handle(path, h)
 }
 
+// HandlePrefix registers a new route with a matcher for the URL path prefix.
 func (s *Server) HandlePrefix(prefix string, h http.Handler) {
 	s.router.PathPrefix(prefix).Handler(h)
 }
 
+// HandleFunc registers a new route with a matcher for the URL path.
 func (s *Server) HandleFunc(path string, h http.HandlerFunc) {
 	s.router.HandleFunc(path, h)
 }
 
+// HandleHeader registers a new route with a matcher for the header.
 func (s *Server) HandleHeader(key, val string, h http.HandlerFunc) {
 	s.router.Headers(key, val).Handler(h)
 }
 
+// ServeHTTP should write reply headers and data to the ResponseWriter and then return.
 func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	s.Handler.ServeHTTP(res, req)
 }

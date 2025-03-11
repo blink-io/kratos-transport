@@ -3,7 +3,6 @@ package http3
 import (
 	"net/http"
 	"path"
-	"sync"
 
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
@@ -14,7 +13,6 @@ type HandlerFunc = khttp.HandlerFunc
 // Router is an HTTP router.
 type Router struct {
 	prefix  string
-	pool    sync.Pool
 	srv     *Server
 	filters []khttp.FilterFunc
 }
@@ -24,9 +22,6 @@ func newRouter(prefix string, srv *Server, filters ...khttp.FilterFunc) *Router 
 		prefix:  prefix,
 		srv:     srv,
 		filters: filters,
-	}
-	r.pool.New = func() interface{} {
-		return &wrapper{router: r}
 	}
 	return r
 }
@@ -42,13 +37,11 @@ func (r *Router) Group(prefix string, filters ...khttp.FilterFunc) *Router {
 // Handle registers a new route with a matcher for the URL path and method.
 func (r *Router) Handle(method, relativePath string, h HandlerFunc, filters ...khttp.FilterFunc) {
 	next := http.Handler(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		ctx := r.pool.Get().(Context)
+		ctx := &wrapper{router: r}
 		ctx.Reset(res, req)
 		if err := h(ctx); err != nil {
 			r.srv.ene(res, req, err)
 		}
-		ctx.Reset(nil, nil)
-		r.pool.Put(ctx)
 	}))
 	next = khttp.FilterChain(filters...)(next)
 	next = khttp.FilterChain(r.filters...)(next)

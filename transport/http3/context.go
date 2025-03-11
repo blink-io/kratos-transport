@@ -111,18 +111,18 @@ func (c *wrapper) Returns(v interface{}, err error) error {
 	return c.router.srv.enc(&c.w, c.req, v)
 }
 
-func (c *wrapper) Result(code int, v interface{}) error {
+func (c *wrapper) Result(code int, v any) error {
 	c.w.WriteHeader(code)
 	return c.router.srv.enc(&c.w, c.req, v)
 }
 
-func (c *wrapper) JSON(code int, v interface{}) error {
+func (c *wrapper) JSON(code int, v any) error {
 	c.res.Header().Set("Content-Type", "application/json")
 	c.res.WriteHeader(code)
 	return json.NewEncoder(c.res).Encode(v)
 }
 
-func (c *wrapper) XML(code int, v interface{}) error {
+func (c *wrapper) XML(code int, v any) error {
 	c.res.Header().Set("Content-Type", "application/xml")
 	c.res.WriteHeader(code)
 	return xml.NewEncoder(c.res).Encode(v)
@@ -182,7 +182,7 @@ func (c *wrapper) Err() error {
 	return c.req.Context().Err()
 }
 
-func (c *wrapper) Value(key interface{}) interface{} {
+func (c *wrapper) Value(key any) any {
 	if c.req == nil {
 		return nil
 	}
