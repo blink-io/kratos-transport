@@ -6,9 +6,11 @@ toolchain go1.24.1
 
 require (
 	github.com/apache/thrift v0.21.0
+	github.com/blink-io/kratos-transport v0.0.0-00010101000000-000000000000
 	github.com/go-kratos/kratos/v2 v2.8.4
-	github.com/tx7do/kratos-transport v1.1.8
 )
+
+replace github.com/blink-io/kratos-transport => ../../
 
 require (
 	github.com/go-playground/form/v4 v4.2.1 // indirect
@@ -16,5 +18,3 @@ require (
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/tx7do/kratos-transport => ../../
