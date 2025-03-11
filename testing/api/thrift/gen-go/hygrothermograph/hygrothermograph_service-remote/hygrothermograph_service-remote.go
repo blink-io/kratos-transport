@@ -7,7 +7,7 @@ import (
 	"flag"
 	"fmt"
 	thrift "github.com/apache/thrift/lib/go/thrift"
-	"github.com/tx7do/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
+	"github.com/blink-io/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
 	"math"
 	"net"
 	"net/url"

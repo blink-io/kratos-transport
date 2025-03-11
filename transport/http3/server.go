@@ -9,13 +9,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blink-io/kratos-transport/transport/http3/matcher"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/quic-go/quic-go/http3"
-	"github.com/tx7do/kratos-transport/transport/http3/matcher"
 )
 
 const (
@@ -25,17 +26,17 @@ const (
 var (
 	_ transport.Server     = (*Server)(nil)
 	_ transport.Endpointer = (*Server)(nil)
+	_ http.Handler         = (*Server)(nil)
 )
 
 type Server struct {
 	*http3.Server
-	tlsConf    *tls.Config
-	endpoint   *url.URL
-	err        error
-	timeout    time.Duration
-	filters    []khttp.FilterFunc
-	middleware matcher.Matcher
-	//ms          []middleware.Middleware
+	tlsConf     *tls.Config
+	endpoint    *url.URL
+	err         error
+	timeout     time.Duration
+	filters     []khttp.FilterFunc
+	middleware  matcher.Matcher
 	decVars     khttp.DecodeRequestFunc
 	decQuery    khttp.DecodeRequestFunc
 	decBody     khttp.DecodeRequestFunc
@@ -124,7 +125,14 @@ func (s *Server) Start(ctx context.Context) error {
 
 func (s *Server) Stop(ctx context.Context) error {
 	log.Info("[HTTP3] server stopping")
-	return s.Close()
+	err := s.Shutdown(ctx)
+	if err != nil {
+		if ctx.Err() != nil {
+			log.Warn("[HTTP3] server couldn't stop gracefully in time, doing force stop")
+			err = s.Server.Close()
+		}
+	}
+	return err
 }
 
 func (s *Server) Route(prefix string, filters ...khttp.FilterFunc) *Router {

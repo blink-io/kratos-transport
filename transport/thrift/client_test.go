@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	api "github.com/tx7do/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
+	api "github.com/blink-io/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
 )
 
 func TestClient(t *testing.T) {

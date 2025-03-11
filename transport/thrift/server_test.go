@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"testing"
 
-	api "github.com/tx7do/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
+	api "github.com/blink-io/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
 )
 
 type HygrothermographHandler struct {

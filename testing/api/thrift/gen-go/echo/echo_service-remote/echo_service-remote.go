@@ -7,7 +7,7 @@ import (
 	"flag"
 	"fmt"
 	thrift "github.com/apache/thrift/lib/go/thrift"
-	"github.com/tx7do/kratos-transport/testing/api/thrift/gen-go/echo"
+	"github.com/blink-io/kratos-transport/testing/api/thrift/gen-go/echo"
 	"math"
 	"net"
 	"net/url"
