@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -78,6 +79,9 @@ func (s *Server) init(opts ...ServerOption) {
 	s.Server.TLSConfig = s.tlsConf
 	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
 
+	if s.Server.Logger == nil {
+		s.Server.Logger = slog.Default()
+	}
 	_, _ = s.Endpoint()
 }
 
@@ -188,10 +192,11 @@ func (s *Server) filter() mux.MiddlewareFunc {
 			tr := &Transport{
 				endpoint:     s.endpoint.String(),
 				operation:    pathTemplate,
+				pathTemplate: pathTemplate,
 				reqHeader:    headerCarrier(req.Header),
 				replyHeader:  headerCarrier(w.Header()),
 				request:      req,
-				pathTemplate: pathTemplate,
+				response:     w,
 			}
 
 			tr.request = req.WithContext(transport.NewServerContext(ctx, tr))
