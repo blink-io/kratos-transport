@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 )
 
@@ -32,13 +31,11 @@ type Connection struct {
 	Transport thrift.TTransport
 }
 
-func (c *Connection) Close() {
-	if c.Transport != nil {
-		err := c.Transport.Close()
-		if err != nil {
-			log.Error("failed to close transport: %v", err)
-		}
+func (c *Connection) Close() error {
+	if c.Transport == nil {
+		return nil
 	}
+	return c.Transport.Close()
 }
 
 func Dial(opts ...ClientOption) (*Connection, error) {
@@ -52,11 +49,7 @@ func dial(opts ...ClientOption) (*Connection, error) {
 		framed:     false,
 		protocol:   ProtocolBinary,
 		secure:     false,
-		tconf: &thrift.TConfiguration{
-			TLSConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
+		tconf: &thrift.TConfiguration{},
 	}
 
 	for _, o := range opts {

@@ -2,12 +2,9 @@ package thrift
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
-	"os"
-	"os/signal"
-	"syscall"
 	"testing"
+	"time"
 
 	api "github.com/blink-io/kratos-transport/testing/api/thrift/gen-go/hygrothermograph"
 )
@@ -20,21 +17,18 @@ func NewHygrothermographHandler() *HygrothermographHandler {
 }
 
 func (p *HygrothermographHandler) GetHygrothermograph(_ context.Context) (_r *api.Hygrothermograph, _err error) {
-	var Humidity = float64(rand.Intn(100))
-	var Temperature = float64(rand.Intn(100))
+	Humidity := float64(rand.Intn(100))
+	Temperature := float64(rand.Intn(100))
 	_r = &api.Hygrothermograph{
 		Humidity:    &Humidity,
 		Temperature: &Temperature,
 	}
-	fmt.Println("Humidity:", Humidity, "Temperature:", Temperature)
 	return
 }
 
 func TestServer(t *testing.T) {
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	srv := NewServer(
 		WithAddress(":7700"),
@@ -42,14 +36,13 @@ func TestServer(t *testing.T) {
 	)
 
 	if err := srv.Start(ctx); err != nil {
+		cancel()
 		panic(err)
 	}
 
-	defer func() {
-		if err := srv.Stop(ctx); err != nil {
-			t.Errorf("expected nil got %v", err)
-		}
-	}()
+	time.Sleep(100 * time.Millisecond)
 
-	<-interrupt
+	if err := srv.Stop(ctx); err != nil {
+		t.Errorf("expected nil got %v", err)
+	}
 }

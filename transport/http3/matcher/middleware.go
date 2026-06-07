@@ -14,7 +14,7 @@ type Matcher interface {
 	Match(operation string) []middleware.Middleware
 }
 
-// New new a middleware matcher.
+// New a middleware matcher.
 func New() Matcher {
 	return &matcher{
 		matches: make(map[string][]middleware.Middleware),
@@ -35,11 +35,8 @@ func (m *matcher) Add(selector string, ms ...middleware.Middleware) {
 	if strings.HasSuffix(selector, "*") {
 		selector = strings.TrimSuffix(selector, "*")
 		m.prefix = append(m.prefix, selector)
-		// sort the prefix:
-		//  - /foo/bar
-		//  - /foo
 		sort.Slice(m.prefix, func(i, j int) bool {
-			return m.prefix[i] > m.prefix[j]
+			return len(m.prefix[i]) > len(m.prefix[j])
 		})
 	}
 	m.matches[selector] = ms

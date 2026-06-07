@@ -47,11 +47,7 @@ func NewServer(opts ...ServerOption) *Server {
 		buffered:   false,
 		framed:     false,
 		protocol:   ProtocolBinary,
-		tconf: &thrift.TConfiguration{
-			TLSConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
+		tconf:      &thrift.TConfiguration{},
 	}
 
 	srv.init(opts...)
@@ -88,17 +84,22 @@ func (s *Server) Start(ctx context.Context) error {
 		return ErrInvalidTransport
 	}
 
-	serverTransport, err := createServerTransport(s.address, s.tlsConf)
-	if err != nil {
-		return err
+	serverTransport, serverTransportErr := createServerTransport(s.address, s.tlsConf)
+	if serverTransportErr != nil {
+		return serverTransportErr
 	}
 
 	log.Infof("[Thrift] server listening on: %s", s.address)
 
 	s.Server = thrift.NewTSimpleServer4(s.processor, serverTransport, transportFactory, protocolFactory)
-	if err := s.Server.Serve(); err != nil {
-		return err
-	}
+	go func() {
+		_ = s.Server.Serve()
+	}()
+
+	go func() {
+		<-ctx.Done()
+		_ = s.Server.Stop()
+	}()
 
 	return nil
 }
@@ -107,7 +108,17 @@ func (s *Server) Stop(ctx context.Context) error {
 	log.Info("[Thrift] server stopping")
 
 	if s.Server != nil {
-		return s.Server.Stop()
+		stopCh := make(chan error, 1)
+		go func() {
+			stopCh <- s.Server.Stop()
+		}()
+
+		select {
+		case stopErr := <-stopCh:
+			return stopErr
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
 
 	return nil

@@ -69,8 +69,8 @@ func (s *Server) init(opts ...ServerOption) {
 	s.Server = &http3.Server{
 		Addr: ":8443",
 	}
-	s.router.NotFoundHandler = http.DefaultServeMux
-	s.router.MethodNotAllowedHandler = http.DefaultServeMux
+	s.router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	s.router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	for _, o := range opts {
 		o(s)
 	}
@@ -119,10 +119,16 @@ func (s *Server) Start(ctx context.Context) error {
 
 	log.Infof("[HTTP3] server listening on: %s", s.Addr)
 
-	if err := s.ListenAndServe(); err != nil {
-		log.Errorf("[HTTP3] start server failed: %s", err.Error())
-		return err
-	}
+	go func() {
+		if err := s.ListenAndServe(); err != nil {
+			log.Errorf("[HTTP3] server error: %s", err.Error())
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+		_ = s.Shutdown(context.Background())
+	}()
 
 	return nil
 }
@@ -231,4 +237,12 @@ func (s *Server) WalkHandle(handle func(method, path string, handler http.Handle
 		handle(r.Method, r.Path, s.ServeHTTP)
 		return nil
 	})
+}
+
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
+}
+
+func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 }

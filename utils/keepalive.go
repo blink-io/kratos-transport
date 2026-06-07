@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
+	"sync"
+	"time"
 
-	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 
 	"google.golang.org/grpc"
@@ -26,6 +26,8 @@ type KeepAliveService struct {
 	lis      net.Listener
 	tlsConf  *tls.Config
 	endpoint *url.URL
+
+	mu sync.Mutex
 }
 
 func NewKeepAliveService(tlsConf *tls.Config) *KeepAliveService {
@@ -55,21 +57,30 @@ func (s *KeepAliveService) Start() error {
 
 	log.Debugf("keep alive service started at %s", s.lis.Addr().String())
 
-	err := s.Serve(s.lis)
-	if !errors.Is(err, http.ErrServerClosed) {
-		return err
-	}
+	go func() {
+		_ = s.Serve(s.lis)
+	}()
 
 	return nil
 }
 
 func (s *KeepAliveService) Stop(ctx context.Context) error {
 	s.health.Shutdown()
-	s.GracefulStop()
 
-	log.Debug("keep alive service stopping")
+	done := make(chan struct{})
+	go func() {
+		s.GracefulStop()
+		close(done)
+	}()
 
-	return nil
+	select {
+	case <-done:
+		log.Debug("keep alive service stopped")
+		return nil
+	case <-ctx.Done():
+		s.Server.Stop()
+		return ctx.Err()
+	}
 }
 
 func (s *KeepAliveService) generatePort(min, max int) int {
@@ -77,11 +88,15 @@ func (s *KeepAliveService) generatePort(min, max int) int {
 }
 
 func (s *KeepAliveService) generateEndpoint() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.endpoint != nil {
 		return nil
 	}
 
-	for {
+	const maxRetries = 100
+	for i := 0; i < maxRetries; i++ {
 		port := s.generatePort(10000, 65535)
 		host := ""
 		if itf, ok := os.LookupEnv("KRATOS_TRANSPORT_KEEPALIVE_INTERFACE"); ok {
@@ -96,11 +111,17 @@ func (s *KeepAliveService) generateEndpoint() error {
 		lis, err := net.Listen("tcp", addr)
 		if err == nil && lis != nil {
 			s.lis = lis
-			endpoint, _ := url.Parse("tcp://" + addr)
+			endpoint, parseErr := url.Parse("tcp://" + addr)
+			if parseErr != nil {
+				lis.Close()
+				return parseErr
+			}
 			s.endpoint = endpoint
 			return nil
 		}
+		time.Sleep(10 * time.Millisecond)
 	}
+	return fmt.Errorf("failed to find available port after %d attempts", maxRetries)
 }
 
 func (s *KeepAliveService) Endpoint() (*url.URL, error) {
@@ -123,7 +144,7 @@ func getIPAddress(interfaceName string) (string, error) {
 				return "", err
 			}
 
-			// 获取第一个IPv4地址
+			// Find the first IPv4 address
 			for _, addr := range addrs {
 				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
 					return ipnet.IP.String(), nil
