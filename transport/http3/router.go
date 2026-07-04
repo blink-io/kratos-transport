@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"path"
 
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v3/transport/http"
 )
 
 // HandlerFunc defines a function to serve HTTP requests.

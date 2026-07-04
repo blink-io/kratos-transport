@@ -7,8 +7,8 @@ import (
 	"net/url"
 
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/go-kratos/kratos/v3/log"
+	"github.com/go-kratos/kratos/v3/transport"
 )
 
 var (

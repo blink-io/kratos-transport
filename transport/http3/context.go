@@ -9,10 +9,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/transport"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/go-kratos/kratos/v2/transport/http/binding"
+	"github.com/go-kratos/kratos/v3/middleware"
+	"github.com/go-kratos/kratos/v3/transport"
+	khttp "github.com/go-kratos/kratos/v3/transport/http"
 	"github.com/gorilla/mux"
 )
 
@@ -101,9 +100,9 @@ func (c *wrapper) Middleware(h middleware.Handler) middleware.Handler {
 	return middleware.Chain(c.router.srv.middleware.Match(c.req.URL.Path)...)(h)
 }
 func (c *wrapper) Bind(v interface{}) error      { return c.router.srv.decBody(c.req, v) }
-func (c *wrapper) BindVars(v interface{}) error  { return binding.BindQuery(c.Vars(), v) }
-func (c *wrapper) BindQuery(v interface{}) error { return binding.BindQuery(c.Query(), v) }
-func (c *wrapper) BindForm(v interface{}) error  { return binding.BindForm(c.req, v) }
+func (c *wrapper) BindVars(v interface{}) error  { return c.router.srv.decVars(c.req, v) }
+func (c *wrapper) BindQuery(v interface{}) error { return c.router.srv.decQuery(c.req, v) }
+func (c *wrapper) BindForm(v interface{}) error  { return bindForm(c.req, v) }
 func (c *wrapper) Returns(v interface{}, err error) error {
 	if err != nil {
 		return err

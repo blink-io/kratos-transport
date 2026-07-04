@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v3/registry"
 )
 
 type clientOptions struct {
@@ -49,7 +49,7 @@ func dial(opts ...ClientOption) (*Connection, error) {
 		framed:     false,
 		protocol:   ProtocolBinary,
 		secure:     false,
-		tconf: &thrift.TConfiguration{},
+		tconf:      &thrift.TConfiguration{},
 	}
 
 	for _, o := range opts {

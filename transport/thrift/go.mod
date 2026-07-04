@@ -4,8 +4,8 @@ go 1.25.0
 
 require (
 	github.com/apache/thrift v0.23.0
-	github.com/blink-io/kratos-transport v0.0.0-20260507153638-31dc78fc0ffb
-	github.com/go-kratos/kratos/v2 v2.9.2
+	github.com/blink-io/kratos-transport v0.0.0-20260607162743-898297e8ea86
+	github.com/go-kratos/kratos/v3 v3.0.0
 )
 
 replace github.com/blink-io/kratos-transport => ../../

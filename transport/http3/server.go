@@ -4,24 +4,23 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/blink-io/kratos-transport/transport/http3/matcher"
-
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/transport"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	klog "github.com/go-kratos/kratos/v3/log"
+	"github.com/go-kratos/kratos/v3/middleware"
+	"github.com/go-kratos/kratos/v3/transport"
+	khttp "github.com/go-kratos/kratos/v3/transport/http"
 	"github.com/gorilla/mux"
+	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 )
 
 const (
-	SupportPackageIsVersion1 = khttp.SupportPackageIsVersion1
+	SupportPackageIsVersion3 = khttp.SupportPackageIsVersion3
 )
 
 var (
@@ -59,29 +58,28 @@ func NewServer(opts ...ServerOption) *Server {
 		strictSlash: true,
 		router:      mux.NewRouter(),
 	}
-
+	srv.Server = &http3.Server{
+		Addr:   ":8443",
+		Logger: klog.Default(),
+		ConnContext: func(ctx context.Context, c *quic.Conn) context.Context {
+			return ctx
+		},
+	}
 	srv.init(opts...)
 
 	return srv
 }
 
 func (s *Server) init(opts ...ServerOption) {
-	s.Server = &http3.Server{
-		Addr: ":8443",
-	}
 	s.router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	s.router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	for _, o := range opts {
 		o(s)
 	}
-
 	s.router.StrictSlash(s.strictSlash)
-	s.Server.TLSConfig = s.tlsConf
 	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
+	s.Server.TLSConfig = s.tlsConf
 
-	if s.Server.Logger == nil {
-		s.Server.Logger = slog.Default()
-	}
 	_, _ = s.Endpoint()
 }
 
@@ -117,28 +115,21 @@ func (s *Server) Start(ctx context.Context) error {
 		return errors.New("http3: no TLS configured")
 	}
 
-	log.Infof("[HTTP3] server listening on: %s", s.Addr)
-
-	go func() {
-		if err := s.ListenAndServe(); err != nil {
-			log.Errorf("[HTTP3] server error: %s", err.Error())
-		}
-	}()
-
-	go func() {
-		<-ctx.Done()
-		_ = s.Shutdown(context.Background())
-	}()
-
+	klog.Info("[HTTP3] server listening", "addr", s.Addr)
+	err := s.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		klog.Error("[HTTP3] server error", "reason", err.Error())
+		return err
+	}
 	return nil
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	log.Info("[HTTP3] server stopping")
+	klog.Info("[HTTP3] server stopping")
 	err := s.Shutdown(ctx)
 	if err != nil {
 		if ctx.Err() != nil {
-			log.Warn("[HTTP3] server couldn't stop gracefully in time, doing force stop")
+			klog.Warn("[HTTP3] server couldn't stop gracefully in time, doing force stop")
 			err = s.Server.Close()
 		}
 	}

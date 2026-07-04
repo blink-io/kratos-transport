@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/middleware"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/go-kratos/kratos/v3/middleware"
+	khttp "github.com/go-kratos/kratos/v3/transport/http"
 )
 
 // ServerOption is an HTTP server option.

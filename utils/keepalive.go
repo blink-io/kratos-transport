@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v3/log"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -55,7 +55,7 @@ func (s *KeepAliveService) Start() error {
 
 	s.health.Resume()
 
-	log.Debugf("keep alive service started at %s", s.lis.Addr().String())
+	log.Debug("keep alive service started", "addr", s.lis.Addr().String())
 
 	go func() {
 		_ = s.Serve(s.lis)

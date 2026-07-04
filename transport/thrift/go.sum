@@ -1,7 +1,9 @@
 github.com/apache/thrift v0.23.0 h1:wKR6YnefQSEnxpEfmgTPuJibNG4bF0p2TK34tHLWi3s=
 github.com/apache/thrift v0.23.0/go.mod h1:zPt6WxgvTOM6hF92y8C+MkEM5LMxZuk4JcQOiU4Esvs=
-github.com/go-kratos/kratos/v2 v2.9.2 h1:px8GJQBeLpquDKQWQ9zohEWiLA8n4D/pv7aH3asvUvo=
-github.com/go-kratos/kratos/v2 v2.9.2/go.mod h1:Jc7jaeYd4RAPjetun2C+oFAOO7HNMHTT/Z4LxpuEDJM=
+github.com/go-kratos/kratos/v3 v2.9.2 h1:px8GJQBeLpquDKQWQ9zohEWiLA8n4D/pv7aH3asvUvo=
+github.com/go-kratos/kratos/v3 v2.9.2/go.mod h1:Jc7jaeYd4RAPjetun2C+oFAOO7HNMHTT/Z4LxpuEDJM=
+github.com/go-kratos/kratos/v3 v3.0.0 h1:dCXqKoeo2Bo9jgC72YfuwJ3g7bPCkHeVeNGyZQ51bLE=
+github.com/go-kratos/kratos/v3 v3.0.0/go.mod h1:8l+0M5UPlm/5hWLvS+wzxHRVRv6sHMG6Lgb4+rw1KIs=
 github.com/go-playground/assert/v2 v2.2.0 h1:JvknZsQTYeFEAhQwI4qEt9cyV5ONwRHC+lYKSsYSR8s=
 github.com/go-playground/assert/v2 v2.2.0/go.mod h1:VDjEfimB/XKnb+ZQfWdccd7VUvScMdVu0Titje2rxJ4=
 github.com/go-playground/form/v4 v4.3.0 h1:OVttojbQv2WNCs4P+VnjPtrt/+30Ipw4890W3OaFlvk=
