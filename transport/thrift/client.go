@@ -8,22 +8,16 @@ import (
 )
 
 type clientOptions struct {
-	Client *thrift.TStandardClient
-
-	discovery registry.Discovery
-	tlsConf   *tls.Config
-
-	endpoint string
-
-	protocol string
-
+	Client     *thrift.TStandardClient
+	discovery  registry.Discovery
+	tlsConf    *tls.Config
+	endpoint   string
+	protocol   string
 	buffered   bool
 	framed     bool
 	bufferSize int
-
-	secure bool
-
-	tconf *thrift.TConfiguration
+	secure     bool
+	tconf      *thrift.TConfiguration
 }
 
 type Connection struct {

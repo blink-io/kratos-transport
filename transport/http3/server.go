@@ -58,29 +58,27 @@ func NewServer(opts ...ServerOption) *Server {
 		strictSlash: true,
 		router:      mux.NewRouter(),
 	}
+
+	srv.router.NotFoundHandler = http.DefaultServeMux
+	srv.router.MethodNotAllowedHandler = http.DefaultServeMux
+	for _, o := range opts {
+		o(srv)
+	}
+	srv.router.StrictSlash(srv.strictSlash)
+	srv.router.Use(srv.filter())
 	srv.Server = &http3.Server{
 		Addr:   ":8443",
 		Logger: klog.Default(),
 		ConnContext: func(ctx context.Context, c *quic.Conn) context.Context {
 			return ctx
 		},
+		Handler:   khttp.FilterChain(srv.filters...)(srv.router),
+		TLSConfig: srv.tlsConf,
 	}
-	srv.init(opts...)
+
+	_, _ = srv.Endpoint()
 
 	return srv
-}
-
-func (s *Server) init(opts ...ServerOption) {
-	s.router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
-	s.router.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
-	for _, o := range opts {
-		o(s)
-	}
-	s.router.StrictSlash(s.strictSlash)
-	s.Server.Handler = khttp.FilterChain(s.filters...)(s.router)
-	s.Server.TLSConfig = s.tlsConf
-
-	_, _ = s.Endpoint()
 }
 
 // Use uses a service middleware with selector.
@@ -122,6 +120,14 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// WalkHandle walks the router and all its sub-routers, calling walkFn for each route in the tree.
+func (s *Server) WalkHandle(handle func(method, path string, handler http.HandlerFunc)) error {
+	return s.WalkRoute(func(r khttp.RouteInfo) error {
+		handle(r.Method, r.Path, s.ServeHTTP)
+		return nil
+	})
 }
 
 func (s *Server) Stop(ctx context.Context) error {
@@ -220,20 +226,4 @@ func (s *Server) WalkRoute(fn khttp.WalkRouteFunc) error {
 		}
 		return nil
 	})
-}
-
-// WalkHandle walks the router and all its sub-routers, calling walkFn for each route in the tree.
-func (s *Server) WalkHandle(handle func(method, path string, handler http.HandlerFunc)) error {
-	return s.WalkRoute(func(r khttp.RouteInfo) error {
-		handle(r.Method, r.Path, s.ServeHTTP)
-		return nil
-	})
-}
-
-func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	http.NotFound(w, r)
-}
-
-func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 }

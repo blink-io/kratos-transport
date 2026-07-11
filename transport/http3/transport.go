@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-kratos/kratos/v3/transport"
+	khttp "github.com/go-kratos/kratos/v3/transport/http"
 )
 
 const (
@@ -14,11 +15,9 @@ const (
 var _ Transporter = (*Transport)(nil)
 
 // Transporter is http Transporter
-type Transporter interface {
-	transport.Transporter
-	Request() *http.Request
-	PathTemplate() string
-}
+type Transporter = khttp.Transporter
+
+type ResponseTransporter = khttp.ResponseTransporter
 
 // Transport is an HTTP transport.
 type Transport struct {
@@ -56,6 +55,11 @@ func (tr *Transport) RequestHeader() transport.Header {
 	return tr.reqHeader
 }
 
+// Response returns the HTTP response.
+func (tr *Transport) Response() http.ResponseWriter {
+	return tr.response
+}
+
 // ReplyHeader returns the reply header.
 func (tr *Transport) ReplyHeader() transport.Header {
 	return tr.replyHeader
@@ -89,8 +93,8 @@ func SetCookie(ctx context.Context, cookie *http.Cookie) {
 // RequestFromServerContext returns request from context.
 func RequestFromServerContext(ctx context.Context) (*http.Request, bool) {
 	if tr, ok := transport.FromServerContext(ctx); ok {
-		if tr, ok := tr.(*Transport); ok {
-			return tr.request, true
+		if htr, ok := tr.(Transporter); ok {
+			return htr.Request(), true
 		}
 	}
 	return nil, false
@@ -125,4 +129,16 @@ func (hc headerCarrier) Keys() []string {
 // Values returns a slice of values associated with the passed key.
 func (hc headerCarrier) Values(key string) []string {
 	return http.Header(hc).Values(key)
+}
+
+// ResponseWriterFromServerContext returns the http.ResponseWriter from context if available.
+// This function provides backward compatibility and safe access to the ResponseWriter.
+// Returns nil if the transport doesn't implement ResponseTransporter.
+func ResponseWriterFromServerContext(ctx context.Context) (http.ResponseWriter, bool) {
+	if tr, ok := transport.FromServerContext(ctx); ok {
+		if httpTr, ok := tr.(ResponseTransporter); ok {
+			return httpTr.Response(), true
+		}
+	}
+	return nil, false
 }

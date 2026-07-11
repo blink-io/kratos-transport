@@ -29,14 +29,14 @@ type Context = khttp.Context
 //	Request() *http.Request
 //	Response() http.ResponseWriter
 //	Middleware(middleware.Handler) middleware.Handler
-//	Bind(interface{}) error
-//	BindVars(interface{}) error
-//	BindQuery(interface{}) error
-//	BindForm(interface{}) error
-//	Returns(interface{}, error) error
-//	Result(int, interface{}) error
-//	JSON(int, interface{}) error
-//	XML(int, interface{}) error
+//	Bind(any) error
+//	BindVars(any) error
+//	BindQuery(any) error
+//	BindForm(any) error
+//	Returns(any, error) error
+//	Result(int, any) error
+//	JSON(int, any) error
+//	XML(int, any) error
 //	String(int, string) error
 //	Blob(int, string, []byte) error
 //	Stream(int, string, io.Reader) error
@@ -99,11 +99,11 @@ func (c *wrapper) Middleware(h middleware.Handler) middleware.Handler {
 	}
 	return middleware.Chain(c.router.srv.middleware.Match(c.req.URL.Path)...)(h)
 }
-func (c *wrapper) Bind(v interface{}) error      { return c.router.srv.decBody(c.req, v) }
-func (c *wrapper) BindVars(v interface{}) error  { return c.router.srv.decVars(c.req, v) }
-func (c *wrapper) BindQuery(v interface{}) error { return c.router.srv.decQuery(c.req, v) }
-func (c *wrapper) BindForm(v interface{}) error  { return bindForm(c.req, v) }
-func (c *wrapper) Returns(v interface{}, err error) error {
+func (c *wrapper) Bind(v any) error      { return c.router.srv.decBody(c.req, v) }
+func (c *wrapper) BindVars(v any) error  { return c.router.srv.decVars(c.req, v) }
+func (c *wrapper) BindQuery(v any) error { return c.router.srv.decQuery(c.req, v) }
+func (c *wrapper) BindForm(v any) error  { return bindForm(c.req, v) }
+func (c *wrapper) Returns(v any, err error) error {
 	if err != nil {
 		return err
 	}

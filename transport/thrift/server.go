@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/go-kratos/kratos/v3/log"
+	klog "github.com/go-kratos/kratos/v3/log"
 	"github.com/go-kratos/kratos/v3/transport"
 )
 
@@ -22,23 +22,16 @@ var (
 )
 
 type Server struct {
-	Server *thrift.TSimpleServer
-
-	tlsConf *tls.Config
-
-	address string
-
-	protocol string
-
+	Server     *thrift.TSimpleServer
+	tlsConf    *tls.Config
+	address    string
+	protocol   string
 	buffered   bool
 	framed     bool
 	bufferSize int
-
-	processor thrift.TProcessor
-
-	err error
-
-	tconf *thrift.TConfiguration
+	err        error
+	processor  thrift.TProcessor
+	tconf      *thrift.TConfiguration
 }
 
 func NewServer(opts ...ServerOption) *Server {
@@ -49,9 +42,7 @@ func NewServer(opts ...ServerOption) *Server {
 		protocol:   ProtocolBinary,
 		tconf:      &thrift.TConfiguration{},
 	}
-
 	srv.init(opts...)
-
 	return srv
 }
 
@@ -89,7 +80,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return serverTransportErr
 	}
 
-	log.Infof("[Thrift] server listening on: %s", s.address)
+	klog.Info("[Thrift] server listening", "addr", s.address)
 
 	s.Server = thrift.NewTSimpleServer4(s.processor, serverTransport, transportFactory, protocolFactory)
 	go func() {
@@ -105,7 +96,7 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	log.Info("[Thrift] server stopping")
+	klog.Info("[Thrift] server stopping")
 
 	if s.Server != nil {
 		stopCh := make(chan error, 1)
